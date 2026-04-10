@@ -25,11 +25,11 @@ read the instructions, edit the PRACTICE section to match EXPECTED.
 
 ```sh
 helix-trainer progress          # See completion stats
-helix-trainer verify <file>     # Check if exercise is complete
-helix-trainer verify-all        # Check all exercises
-helix-trainer reset <file>      # Reset to original state
-helix-trainer reset-all         # Reset everything
+helix-trainer verify             # Check all exercises
+helix-trainer verify <file>     # Check a specific exercise
 helix-trainer next              # Show next incomplete exercise
+helix-trainer reset <file>      # Reset one exercise
+helix-trainer reset             # Reset all exercises
 ```
 
 ## Tips

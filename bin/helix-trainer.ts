@@ -15,11 +15,9 @@ helix-trainer — Interactive Helix keybinding exercises for Zed
 
 Usage:
   helix-trainer init [dir]       Generate exercise project (default: ./helix-exercises)
-  helix-trainer verify [file]    Check exercise against expected output
-  helix-trainer verify-all       Check all exercises
+  helix-trainer verify [file]    Check one exercise, or all if no file given
   helix-trainer progress         Show completion stats per module
-  helix-trainer reset <file>     Reset an exercise to its original state
-  helix-trainer reset-all        Reset all exercises
+  helix-trainer reset [file]     Reset one exercise, or all if no file given
   helix-trainer next             Show the next incomplete exercise
 
 Getting started:
@@ -96,9 +94,9 @@ async function init(targetArg?: string): Promise<void> {
 
   Commands (run from inside the project):
     helix-trainer progress       Show your completion stats
-    helix-trainer verify <file>  Check a specific exercise
+    helix-trainer verify         Check all exercises
     helix-trainer next           See the next incomplete exercise
-    helix-trainer reset <file>   Reset an exercise to original
+    helix-trainer reset          Reset all exercises to original
 `);
 }
 
@@ -123,17 +121,13 @@ switch (command) {
   }
   case "verify": {
     const file = args[0];
-    if (!file) {
-      console.error("Usage: helix-trainer verify <file>");
-      process.exit(1);
+    if (file) {
+      const result = await verify(resolve(file));
+      process.exit(result.passed ? 0 : 1);
+    } else {
+      const allPassed = await verifyAll(findExercisesDir());
+      process.exit(allPassed ? 0 : 1);
     }
-    const result = await verify(resolve(file));
-    process.exit(result.passed ? 0 : 1);
-    break;
-  }
-  case "verify-all": {
-    const allPassed = await verifyAll(findExercisesDir());
-    process.exit(allPassed ? 0 : 1);
     break;
   }
   case "progress": {
@@ -142,15 +136,11 @@ switch (command) {
   }
   case "reset": {
     const file = args[0];
-    if (!file) {
-      console.error("Usage: helix-trainer reset <file>");
-      process.exit(1);
+    if (file) {
+      await resetExercise(resolve(file), TEMPLATE_DIR);
+    } else {
+      await resetAll(findExercisesDir(), TEMPLATE_DIR);
     }
-    await resetExercise(resolve(file), TEMPLATE_DIR);
-    break;
-  }
-  case "reset-all": {
-    await resetAll(findExercisesDir(), TEMPLATE_DIR);
     break;
   }
   case "next": {

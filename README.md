@@ -182,26 +182,18 @@ Show completion stats with progress bars for each module.
   Total: 11/49 exercises completed (22%)
 ```
 
-### `helix-trainer verify <file>`
+### `helix-trainer verify [file]`
 
-Check if an exercise is complete by diffing PRACTICE against EXPECTED.
+Check exercises by diffing PRACTICE against EXPECTED. With no argument, checks all exercises.
 
 ```sh
+# Check all exercises
+helix-trainer verify
+
+# Check a specific exercise
 helix-trainer verify exercises/04-text-objects/01-delimiter-objects.hxt
 # ✓ exercises/04-text-objects/01-delimiter-objects.hxt
-
-helix-trainer verify exercises/06-multi-selection/01-regex-select.hxt
-# ✗ exercises/06-multi-selection/01-regex-select.hxt
-#
-#   Differences:
-#     line 1:
-#       got:      "The color of the sky..."
-#       expected: "The colour of the sky..."
 ```
-
-### `helix-trainer verify-all`
-
-Check all exercises at once.
 
 ### `helix-trainer next`
 
@@ -212,18 +204,17 @@ helix-trainer next
 # exercises/03-changes/03-undo-redo-repeat.hxt
 ```
 
-### `helix-trainer reset <file>`
+### `helix-trainer reset [file]`
 
-Restore an exercise to its original state (from the installed package templates).
+Restore exercises to their original state from the installed package templates. With no argument, resets all exercises.
 
 ```sh
+# Reset a specific exercise
 helix-trainer reset exercises/01-movement/01-basic-motion.hxt
 # ✓ Reset 01-movement/01-basic-motion.hxt
-```
 
-### `helix-trainer reset-all`
-
-Reset all exercises. Start fresh.
+# Reset everything — start fresh
+helix-trainer reset
 
 ## The Helix Mental Model
 
