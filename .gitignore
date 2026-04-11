@@ -38,3 +38,8 @@ bun.lock
 
 # Progress data
 *.db
+
+
+# Added by cargo
+
+/target

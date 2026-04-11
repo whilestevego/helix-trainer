@@ -32,14 +32,16 @@ The editor is the trainer. No separate app, no context-switching.
 ## Install
 
 ```sh
-# Bun (recommended)
-bun add -g helix-trainer
+# From crates.io
+cargo install helix-trainer
 
-# npm
-npm install -g helix-trainer
+# Or build from source
+git clone https://github.com/yourusername/helix-trainer
+cd helix-trainer
+cargo install --path .
 ```
 
-Requires [Bun](https://bun.sh) runtime.
+Pre-built binaries for macOS (Intel + Apple Silicon), Linux, and Windows are available on the [Releases](../../releases) page.
 
 ## Quick Start
 
@@ -262,7 +264,7 @@ Helix Trainer is built for [Zed](https://zed.dev) with `helix_mode: true`, but t
 - **Helix** — the exercises use standard Helix keybindings
 - **Neovim** — with a Helix emulation plugin
 
-The CLI tool requires [Bun](https://bun.sh) for the `verify`, `progress`, and `reset` commands. The exercises themselves are plain text files — no runtime needed to practice.
+The CLI is a single static binary with no runtime dependencies. The exercises themselves are plain text files embedded in the binary.
 
 ## Contributing
 
@@ -290,14 +292,16 @@ If an exercise has incorrect expected output, unclear instructions, or a keybind
 
 ## How It's Built
 
-The entire project is ~200 lines of TypeScript with zero runtime dependencies:
+A single-binary Rust CLI with minimal dependencies:
 
-- **`src/verify.ts`** — Parses `.hxt` files, extracts PRACTICE/EXPECTED sections, diffs them
-- **`src/progress.ts`** — Scans exercise files and renders a progress dashboard
-- **`src/reset.ts`** — Restores exercises from the package's built-in templates
-- **`bin/helix-trainer.ts`** — CLI entry point and command router
+- **`src/hxt.rs`** — Pure parser for `.hxt` files: extracts PRACTICE/EXPECTED sections, diffs them
+- **`src/commands/verify.rs`** — Verifies exercises against expected output
+- **`src/commands/progress.rs`** — Scans exercise files and renders a progress dashboard
+- **`src/commands/reset.rs`** — Restores exercises from embedded templates
+- **`src/commands/init.rs`** — Extracts embedded exercises to a new directory
+- **`src/main.rs`** — CLI entry point with clap subcommands
 
-The exercises are plain text files shipped with the package. `helix-trainer init` copies them to a new directory. That's the entire architecture.
+The 49 exercises are compiled into the binary via `include_dir!`. `helix-trainer init` extracts them to disk. That's the entire architecture.
 
 ## License
 
