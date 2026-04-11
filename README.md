@@ -210,13 +210,19 @@ helix-trainer next
 
 Restore exercises to their original state from the installed package templates. With no argument, resets all exercises.
 
-```sh
+
 # Reset a specific exercise
+
+```sh
 helix-trainer reset exercises/01-movement/01-basic-motion.hxt
 # ✓ Reset 01-movement/01-basic-motion.hxt
+```
 
 # Reset everything — start fresh
+
+```sh
 helix-trainer reset
+```
 
 ## The Helix Mental Model
 
