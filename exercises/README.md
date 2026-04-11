@@ -1,11 +1,11 @@
 # Helix Trainer — Exercises
 
-Practice Helix keybindings directly in Zed. Open any `.hxt` file,
+Practice Helix keybindings directly in your editor. Open any `.hxt` file,
 read the instructions, edit the PRACTICE section to match EXPECTED.
 
 ## Getting Started
 
-1. Open this folder as a Zed workspace
+1. Open this folder in your editor
 2. Start with `01-movement/01-basic-motion.hxt`
 3. Read the COMMANDS TO LEARN and INSTRUCTIONS
 4. Edit the text between PRACTICE and EXPECTED markers

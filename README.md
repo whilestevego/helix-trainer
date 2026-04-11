@@ -2,12 +2,12 @@
 
 **Learn Helix keybindings by doing — 49 hands-on exercises you complete in your real editor.**
 
-Helix Trainer generates a structured set of practice files that you open directly in [Zed](https://zed.dev) (or any editor with Helix mode). Each exercise teaches specific commands, gives you text to transform, and shows the expected result. You practice with real keybindings on real text — no simulations, no quizzes, just deliberate practice.
+Helix Trainer generates a structured set of practice files that you open directly in your editor (Helix, Zed, or any editor with Helix keybindings). Each exercise teaches specific commands, gives you text to transform, and shows the expected result. You practice with real keybindings on real text — no simulations, no quizzes, just deliberate practice.
 
 ```
 helix-trainer init
 cd helix-exercises
-# Open in Zed. Start editing.
+# Open in your editor. Start editing.
 ```
 
 ---
@@ -22,7 +22,7 @@ Helix Trainer gives you that context: structured exercises that progressively bu
 
 1. **Install** the CLI tool
 2. **Generate** an exercise project with `helix-trainer init`
-3. **Open** the project in Zed (or any Helix-mode editor) as a workspace
+3. **Open** the project in your editor
 4. **Edit** each `.hxt` file — the PRACTICE section contains text to transform, the EXPECTED section shows the goal
 5. **Verify** your work with `helix-trainer verify <file>` or just compare visually
 6. **Track** your progress with `helix-trainer progress`
@@ -55,8 +55,7 @@ helix-trainer init ~/code/helix-practice
 # Enter the project
 cd helix-exercises
 
-# Open in Zed
-zed .
+# Open in your editor
 
 # Start with the first exercise
 # exercises/01-movement/01-basic-motion.hxt
@@ -142,7 +141,7 @@ HINTS (read only if stuck):
 
 | Module | Exercises | What You'll Learn |
 |--------|-----------|-------------------|
-| **08 Goto Mode** | 4 | `g d`/`g r` (LSP), `g n`/`g p` (buffers), `g o`/`g u` (Zed git ops) |
+| **08 Goto Mode** | 4 | `g d`/`g r` (LSP), `g n`/`g p` (buffers), `g o`/`g u` (Zed git ops — not in native Helix) |
 | **09 Space Mode** | 3 | `Space f` (files), `Space s` (symbols), `Space r` (rename), clipboard |
 | **10 Unimpaired** | 3 | `]d`/`[d` (diagnostics), `]f`/`[f` (functions), indent navigation |
 
@@ -254,7 +253,7 @@ This is the workflow you'll master in Module 06.
 
 **One module per session.** Don't grind through all 49 in a day. Do a module, then use those commands in your real work. Come back tomorrow.
 
-**Use the which-key popup.** In Zed with Helix mode, press any prefix key (`g`, `m`, `Space`, `z`, `]`, `[`) and pause — a popup shows all available sub-commands. This is your cheat sheet.
+**Use the which-key popup.** Press any prefix key (`g`, `m`, `Space`, `z`, `]`, `[`) and pause — a popup shows all available sub-commands. This is your cheat sheet.
 
 **`;` is your reset button.** If a selection goes wrong, press `;` to collapse it back to a cursor and try again. Build this habit early.
 
@@ -264,10 +263,10 @@ This is the workflow you'll master in Module 06.
 
 ## Compatibility
 
-Helix Trainer is built for [Zed](https://zed.dev) with `helix_mode: true`, but the exercises work in any editor that supports Helix keybindings:
+The exercises use standard Helix keybindings and work in any editor that supports them:
 
-- **Zed** — native Helix mode (`"helix_mode": true` in settings.json)
-- **Helix** — the exercises use standard Helix keybindings
+- **[Helix](https://helix-editor.com)** — native support
+- **[Zed](https://zed.dev)** — built-in Helix mode (`"helix_mode": true` in settings.json)
 - **Neovim** — with a Helix emulation plugin
 
 The CLI is a single static binary with no runtime dependencies. The exercises themselves are plain text files embedded in the binary.
@@ -294,7 +293,7 @@ Contributions are welcome! Here's how you can help:
 
 ### Reporting issues
 
-If an exercise has incorrect expected output, unclear instructions, or a keybinding that doesn't work in Zed's Helix mode, please [open an issue](../../issues).
+If an exercise has incorrect expected output, unclear instructions, or a keybinding that doesn't work in your editor's Helix mode, please [open an issue](../../issues).
 
 ## How It's Built
 

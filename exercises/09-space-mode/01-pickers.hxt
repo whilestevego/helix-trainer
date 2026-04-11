@@ -16,7 +16,7 @@ MNEMONIC: Space = leader, f=file, b=buffer, g=git, j=jump
 
 INSTRUCTIONS
 ────────────
-  Space mode pickers are your primary navigation tools in Zed.
+  Space mode pickers are your primary navigation tools.
   This exercise is a reference card — fill in the correct command
   for each navigation scenario.
 

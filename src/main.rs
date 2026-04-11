@@ -10,7 +10,7 @@ use clap::{Parser, Subcommand};
 #[derive(Parser)]
 #[command(
     name = "helix-trainer",
-    about = "Interactive Helix keybinding exercises for Zed",
+    about = "Interactive Helix keybinding exercises",
     version
 )]
 struct Cli {

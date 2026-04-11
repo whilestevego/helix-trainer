@@ -10,7 +10,7 @@ COMMANDS TO LEARN
   .     Repeat last insert/change
 
 NOTE: Helix uses U for redo (not Ctrl-r like Vim).
-      Zed also supports Ctrl-r as a non-standard extra.
+      Some editors (e.g. Zed) also support Ctrl-r as a non-standard extra.
 
 INSTRUCTIONS
 ────────────

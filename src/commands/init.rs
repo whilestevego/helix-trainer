@@ -70,7 +70,7 @@ pub fn run(target_arg: Option<&Path>) -> Result<()> {
         r#"
   Next steps:
     cd {}
-    # Open this folder in Zed as a workspace
+    # Open this folder in your editor
     # Start with exercises/01-movement/01-basic-motion.hxt
 
   Commands (run from inside the project):
