@@ -2,12 +2,13 @@
 
 **Learn Helix keybindings by doing — 49 hands-on exercises you complete in your real editor.**
 
-Helix Trainer generates a structured set of practice files that you open directly in your editor (Helix, Zed, or any editor with Helix keybindings). Each exercise teaches specific commands, gives you text to transform, and shows the expected result. You practice with real keybindings on real text — no simulations, no quizzes, just deliberate practice.
+Helix Trainer is a TUI app that guides you through 49 structured exercises. It watches your exercise files for changes, shows instructions and hints, and auto-advances as you complete each one. You edit in your real editor (Helix, Zed, or any editor with Helix keybindings) — no simulations, no quizzes, just deliberate practice.
 
 ```
 helix-trainer init
 cd helix-exercises
-# Open in your editor. Start editing.
+helix-trainer          # Launch the TUI
+# Open exercise files in your editor in a split pane
 ```
 
 ---
@@ -20,14 +21,14 @@ Helix Trainer gives you that context: structured exercises that progressively bu
 
 ## How It Works
 
-1. **Install** the CLI tool
-2. **Generate** an exercise project with `helix-trainer init`
-3. **Open** the project in your editor
-4. **Edit** each `.hxt` file — the PRACTICE section contains text to transform, the EXPECTED section shows the goal
-5. **Verify** your work with `helix-trainer verify <file>` or just compare visually
-6. **Track** your progress with `helix-trainer progress`
+1. **Install** the tool and run `helix-trainer init`
+2. **Launch** the TUI with `helix-trainer` from the project directory
+3. **Open** exercise `.hxt` files in your editor in a split pane alongside the TUI
+4. **Edit** the PRACTICE section to match the EXPECTED section using the commands shown in the TUI
+5. **Save** — the TUI detects your changes, verifies them, and auto-advances on success
+6. **Use the TUI** to navigate exercises, reveal hints, and reset exercises
 
-The editor is the trainer. No separate app, no context-switching.
+The TUI shows instructions and commands. Your editor is where you practice.
 
 ## Install
 
@@ -48,47 +49,22 @@ Pre-built binaries for macOS (Intel + Apple Silicon), Linux, and Windows are ava
 ```sh
 # Generate the exercise project
 helix-trainer init
-
-# Or specify a custom directory
-helix-trainer init ~/code/helix-practice
-
-# Enter the project
 cd helix-exercises
 
-# Open in your editor
+# Launch the TUI
+helix-trainer
 
-# Start with the first exercise
-# exercises/01-movement/01-basic-motion.hxt
+# In another terminal/pane, open exercise files in your editor
+hx exercises/01-movement/01-basic-motion.hxt
 ```
 
-Open the file, read the instructions at the top, edit the PRACTICE section to match EXPECTED. That's it.
+The TUI shows the exercise instructions and commands. Edit the PRACTICE section in your editor to match EXPECTED. Save, and the TUI auto-verifies and advances.
 
 ## Exercise Format
 
-Every exercise is a self-contained `.hxt` file with a clear structure:
+Exercise `.hxt` files are minimal — just the content you need to edit:
 
 ```
-╔══════════════════════════════════════════════════════════════════╗
-║  HELIX TRAINER — Exercise 6.1: Regex Select                     ║
-║  Category: Multi-Selection         Difficulty: ★★☆ Intermediate  ║
-╚══════════════════════════════════════════════════════════════════╝
-
-COMMANDS TO LEARN
-─────────────────
-  s     Select all regex matches within the current selection
-  c     Change (delete selection and enter insert mode)
-
-INSTRUCTIONS
-────────────
-  The paragraph below uses "color" five times. Change every
-  instance to "colour" — all at once.
-
-  The Helix way:
-  1. Select the entire practice block
-  2. Press  s , type  color , press Enter
-  3. Press  c , type  colour , press Esc
-  Done. Five replacements, zero repetition.
-
 ────────────────────────── PRACTICE ──────────────────────────────
 
 The color of the sky changes throughout the day. At dawn, a warm
@@ -152,9 +128,7 @@ HINTS (read only if stuck):
 | **11 Advanced Workflows** | 5 | Rename variable, extract function, reformat data, bulk transform, Vim-to-Helix |
 | **12 Challenges** | 4 | Speed edit, minimal keystrokes, real-world refactor, code golf |
 
-## CLI Reference
-
-All commands except `init` run from inside the generated project directory.
+## Usage
 
 ### `helix-trainer init [dir]`
 
@@ -165,63 +139,20 @@ helix-trainer init                    # Creates ./helix-exercises/
 helix-trainer init ~/my-training      # Custom location
 ```
 
-### `helix-trainer progress`
+### `helix-trainer`
 
-Show completion stats with progress bars for each module.
+Launch the TUI from inside a project directory. The TUI watches exercise files for changes and auto-verifies on save.
 
-```
-  HELIX TRAINER — Progress
+**TUI Keybindings:**
 
-  Module                       Progress
-  ─────────────────────────────────────────
-  ✓ 01-movement                  ███████████████   5/5  100%
-  ✓ 02-selection                 ███████████████   4/4  100%
-    03-changes                   ██████░░░░░░░░░   2/5  40%
-    04-text-objects              ░░░░░░░░░░░░░░░   0/4  0%
-    ...
-  ─────────────────────────────────────────
-  Total: 11/49 exercises completed (22%)
-```
-
-### `helix-trainer verify [file]`
-
-Check exercises by diffing PRACTICE against EXPECTED. With no argument, checks all exercises.
-
-```sh
-# Check all exercises
-helix-trainer verify
-
-# Check a specific exercise
-helix-trainer verify exercises/04-text-objects/01-delimiter-objects.hxt
-# ✓ exercises/04-text-objects/01-delimiter-objects.hxt
-```
-
-### `helix-trainer next`
-
-Print the path of the next incomplete exercise.
-
-```sh
-helix-trainer next
-# exercises/03-changes/03-undo-redo-repeat.hxt
-```
-
-### `helix-trainer reset [file]`
-
-Restore exercises to their original state from the installed package templates. With no argument, resets all exercises.
-
-
-# Reset a specific exercise
-
-```sh
-helix-trainer reset exercises/01-movement/01-basic-motion.hxt
-# ✓ Reset 01-movement/01-basic-motion.hxt
-```
-
-# Reset everything — start fresh
-
-```sh
-helix-trainer reset
-```
+| Key | Action |
+|-----|--------|
+| `j`/`k` or ↑/↓ | Navigate exercises |
+| `h` | 💡 Reveal next hint |
+| `r` | 🔄 Reset current exercise |
+| `n` | ⏭️ Jump to next incomplete |
+| `?` | Toggle help overlay |
+| `q` | Quit |
 
 ## The Helix Mental Model
 
@@ -257,9 +188,9 @@ This is the workflow you'll master in Module 06.
 
 **`;` is your reset button.** If a selection goes wrong, press `;` to collapse it back to a cursor and try again. Build this habit early.
 
-**Read the hints last.** They're placed below EXPECTED deliberately. Try each exercise without hints first. Struggle is where learning happens.
+**Use the TUI hints.** Press `h` to reveal hints one at a time. Try each exercise without hints first. Struggle is where learning happens.
 
-**Repeat the hard ones.** Use `helix-trainer reset <file>` to redo any exercise. The challenges in Module 12 are designed for repeated practice.
+**Repeat the hard ones.** Press `r` in the TUI to reset any exercise. The challenges in Module 12 are designed for repeated practice.
 
 ## Compatibility
 
@@ -297,16 +228,15 @@ If an exercise has incorrect expected output, unclear instructions, or a keybind
 
 ## How It's Built
 
-A single-binary Rust CLI with minimal dependencies:
+A single-binary Rust TUI built with ratatui:
 
+- **`src/tui/`** — TUI app: event loop, layout, widgets, file watching
 - **`src/hxt.rs`** — Pure parser for `.hxt` files: extracts PRACTICE/EXPECTED sections, diffs them
-- **`src/commands/verify.rs`** — Verifies exercises against expected output
-- **`src/commands/progress.rs`** — Scans exercise files and renders a progress dashboard
-- **`src/commands/reset.rs`** — Restores exercises from embedded templates
+- **`src/metadata.rs`** — Exercise metadata (titles, instructions, hints) deserialized from embedded TOML
 - **`src/commands/init.rs`** — Extracts embedded exercises to a new directory
-- **`src/main.rs`** — CLI entry point with clap subcommands
+- **`exercises.toml`** — All 49 exercises' metadata (embedded in binary at compile time)
 
-The 49 exercises are compiled into the binary via `include_dir!`. `helix-trainer init` extracts them to disk. That's the entire architecture.
+Exercise templates and metadata are compiled into the binary via `include_dir!` and `include_str!`. The TUI watches `.hxt` files for changes using the `notify` crate.
 
 ## License
 
@@ -317,4 +247,5 @@ MIT
 - [Helix Editor](https://helix-editor.com) — for the selection-first editing model
 - [Zed](https://zed.dev) — for bringing Helix mode to a modern editor
 - [Kakoune](https://kakoune.org) — the original inspiration for selection-first editing
+- [ratatui](https://ratatui.rs) — for the TUI framework
 - Vim's `vimtutor` — the original "learn by editing" concept that inspired this project

@@ -1,16 +1,14 @@
 # Helix Trainer — Exercises
 
-Practice Helix keybindings directly in your editor. Open any `.hxt` file,
-read the instructions, edit the PRACTICE section to match EXPECTED.
+Practice Helix keybindings directly in your editor. Each `.hxt` file
+contains a PRACTICE section to edit and an EXPECTED section showing the goal.
 
 ## Getting Started
 
-1. Open this folder in your editor
-2. Start with `01-movement/01-basic-motion.hxt`
-3. Read the COMMANDS TO LEARN and INSTRUCTIONS
-4. Edit the text between PRACTICE and EXPECTED markers
-5. Compare your result to the EXPECTED section below it
-6. Move to the next exercise
+1. Run `helix-trainer` from this project's root to launch the TUI
+2. Open exercise files in your editor in a split pane
+3. Edit the PRACTICE section to match the EXPECTED section
+4. Save — the TUI detects changes and verifies automatically
 
 ## Progression
 
@@ -21,21 +19,10 @@ read the instructions, edit the PRACTICE section to match EXPECTED.
 | **Advanced** | 08-10 | Goto mode, space mode, unimpaired navigation |
 | **Mastery** | 11-12 | Advanced workflows, challenges |
 
-## CLI Tools (optional)
-
-```sh
-helix-trainer progress          # See completion stats
-helix-trainer verify             # Check all exercises
-helix-trainer verify <file>     # Check a specific exercise
-helix-trainer next              # Show next incomplete exercise
-helix-trainer reset <file>      # Reset one exercise
-helix-trainer reset             # Reset all exercises
-```
-
 ## Tips
 
-- Press any prefix key (`g`, `m`, `Space`, `z`, `]`, `[`) and wait
-  for the which-key popup to see available commands
-- Use `u` to undo if you make a mistake
+- The TUI shows instructions, commands, and hints for each exercise
+- Press `h` in the TUI to reveal hints one at a time
+- Press `r` in the TUI to reset an exercise
+- Use `u` to undo if you make a mistake in your editor
 - Use `;` to collapse a selection back to a cursor
-- The HINTS section is below EXPECTED — scroll past the answer first

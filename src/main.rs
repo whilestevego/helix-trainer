@@ -1,7 +1,8 @@
 mod commands;
-mod display;
 mod exercises;
 mod hxt;
+mod metadata;
+mod tui;
 
 use std::path::PathBuf;
 
@@ -25,20 +26,6 @@ enum Commands {
         /// Target directory
         dir: Option<PathBuf>,
     },
-    /// Check one exercise, or all if no file given
-    Verify {
-        /// Exercise file to verify
-        file: Option<PathBuf>,
-    },
-    /// Show completion stats per module
-    Progress,
-    /// Reset one exercise, or all if no file given
-    Reset {
-        /// Exercise file to reset
-        file: Option<PathBuf>,
-    },
-    /// Show the next incomplete exercise
-    Next,
 }
 
 fn find_exercises_dir() -> PathBuf {
@@ -50,48 +37,21 @@ fn find_exercises_dir() -> PathBuf {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let cli = Cli::parse();
 
     let result = match cli.command {
         Some(Commands::Init { dir }) => commands::init::run(dir.as_deref()),
-        Some(Commands::Verify { file }) => {
-            if let Some(file) = file {
-                let path = if file.is_relative() {
-                    std::env::current_dir().unwrap().join(&file)
-                } else {
-                    file
-                };
-                match commands::verify::verify_file(&path) {
-                    Ok(passed) => std::process::exit(if passed { 0 } else { 1 }),
-                    Err(e) => Err(e),
-                }
-            } else {
-                match commands::verify::verify_all(&find_exercises_dir()) {
-                    Ok(all_passed) => std::process::exit(if all_passed { 0 } else { 1 }),
-                    Err(e) => Err(e),
-                }
-            }
-        }
-        Some(Commands::Progress) => commands::progress::run(&find_exercises_dir()),
-        Some(Commands::Reset { file }) => {
-            if let Some(file) = file {
-                let path = if file.is_relative() {
-                    std::env::current_dir().unwrap().join(&file)
-                } else {
-                    file
-                };
-                commands::reset::reset_file(&path)
-            } else {
-                commands::reset::reset_all(&find_exercises_dir())
-            }
-        }
-        Some(Commands::Next) => commands::next::run(&find_exercises_dir()),
         None => {
-            use clap::CommandFactory;
-            Cli::command().print_help().ok();
-            println!();
-            std::process::exit(0);
+            let exercises_dir = find_exercises_dir();
+            if !exercises_dir.exists() {
+                eprintln!(
+                    "No exercises/ directory found. Run 'helix-trainer init' first."
+                );
+                std::process::exit(1);
+            }
+            tui::run(exercises_dir).await
         }
     };
 

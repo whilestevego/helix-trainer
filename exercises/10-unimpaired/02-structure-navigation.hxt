@@ -1,30 +1,3 @@
-╔══════════════════════════════════════════════════════════════════╗
-║  HELIX TRAINER — Exercise 10.2: Structure Navigation            ║
-║  Category: Unimpaired            Difficulty: ★★★ Advanced       ║
-╚══════════════════════════════════════════════════════════════════╝
-
-COMMANDS TO LEARN
-─────────────────
-  ] c     Go to next git hunk (change)
-  [ c     Go to previous git hunk
-  ] T     Go to next test
-  [ T     Go to previous test
-  ] p     Go to next paragraph
-  [ p     Go to previous paragraph
-  ] g     Go to next change
-  [ g     Go to previous change
-  ] G     Go to last change
-  [ G     Go to first change
-  ] Space Insert empty line below
-  [ Space Insert empty line above
-
-INSTRUCTIONS
-────────────
-  Part A: Add empty lines between each section heading using
-  ] Space and [ Space.
-
-  Part B: Fill in the remaining reference entries.
-
 ────────────────────────── PRACTICE ──────────────────────────────
 
 SECTION ONE
@@ -61,9 +34,3 @@ MORE NAVIGATION:
   Insert empty line below:    ] Space
   Insert empty line above:    [ Space
 
-──────────────────────────────────────────────────────────────────
-HINTS (read only if stuck):
-  Hint 1: Position cursor at the end of "section one goes here."
-          then press ] Space to insert an empty line below.
-  Hint 2: Repeat between each section.
-  Hint 3: c=change/hunk, T=test (uppercase), Space=empty line

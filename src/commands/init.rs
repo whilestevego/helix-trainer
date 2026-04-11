@@ -3,7 +3,6 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 
-use crate::display;
 use crate::exercises::EXERCISES;
 
 fn extract_dir(dir: &include_dir::Dir<'_>, dest: &Path) -> Result<usize> {
@@ -41,10 +40,10 @@ pub fn run(target_arg: Option<&Path>) -> Result<()> {
 
     // Check if target already has exercises
     if exercises_dest.join("README.md").exists() {
-        display::warning(&format!(
-            "{} already contains exercises.",
+        eprintln!(
+            "! {} already contains exercises.",
             target.display()
-        ));
+        );
         eprintln!("  Use 'helix-trainer reset' from that directory to restore them.");
         std::process::exit(1);
     }
@@ -56,11 +55,11 @@ pub fn run(target_arg: Option<&Path>) -> Result<()> {
     // Create .gitignore
     fs::write(target.join(".gitignore"), "*.db\n.DS_Store\n")?;
 
-    display::success(&format!(
-        "Created {} exercise files in {}/exercises/",
+    println!(
+        "  ✅ Created {} exercise files in {}/exercises/",
         count,
         target.display()
-    ));
+    );
 
     let display_name = target_arg
         .map(|p| p.display().to_string())
@@ -70,14 +69,8 @@ pub fn run(target_arg: Option<&Path>) -> Result<()> {
         r#"
   Next steps:
     cd {}
-    # Open this folder in your editor
-    # Start with exercises/01-movement/01-basic-motion.hxt
-
-  Commands (run from inside the project):
-    helix-trainer progress       Show your completion stats
-    helix-trainer verify         Check all exercises
-    helix-trainer next           See the next incomplete exercise
-    helix-trainer reset          Reset all exercises to original
+    helix-trainer              Launch the TUI trainer
+    # Open exercise files in your editor in a split pane
 "#,
         display_name
     );

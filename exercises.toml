@@ -1,0 +1,2280 @@
+[[exercises]]
+id = "01-movement/01-basic-motion"
+title = "Basic Motion"
+category = "Movement"
+difficulty = 1
+notes = "MNEMONIC: h is leftmost, l is rightmost, j hangs down, k points up"
+instructions = """
+Each line below contains a word marked with brackets [like this].
+Your goal: delete ONLY the bracketed word (including brackets).
+
+Steps for each line:
+1. Use h/j/k/l to move your cursor onto the [ character
+2. Press  v  to enter select mode
+3. Use  l  to extend your selection to include the ]
+4. Press  d  to delete
+
+Do NOT use w, b, f, or any other motion — only h, j, k, l.
+"""
+hints = [
+  "Position cursor on [, press v, then l repeatedly until ] is included in the selection, then d.",
+  "Remember: in Helix, motions CREATE selections. So just moving with h/j/k/l already selects the character under the cursor. v extends it as you move.",
+]
+
+[[exercises.commands]]
+key = "h"
+description = "Move left"
+
+[[exercises.commands]]
+key = "j"
+description = "Move down"
+
+[[exercises.commands]]
+key = "k"
+description = "Move up"
+
+[[exercises.commands]]
+key = "l"
+description = "Move right"
+
+[[exercises]]
+id = "01-movement/02-word-motion"
+title = "Word Motion"
+category = "Movement"
+difficulty = 1
+notes = """
+MNEMONIC: w=word, b=back, e=end. Uppercase = WORD (whitespace-delimited)
+
+NOTE: In Helix, w selects from cursor to the start of the next word.
+      This means pressing w then d deletes a word — select, then act!
+"""
+instructions = """
+Delete every other word to transform each sentence.
+Use  w  to select a word, then  d  to delete it.
+
+Tip: After deleting, you may need to also delete the extra space.
+Try  w d  for each word you want to remove.
+"""
+hints = [
+  "Position at start of \"two\", press w to select it, then d to delete. You'll also need to handle the space.",
+  "Try selecting the word AND the following space before deleting: w on the word, then l to extend into the space, then d.",
+  "Alternative approach — use v to enter select mode, then w to extend across the word + space, then d.",
+]
+
+[[exercises.commands]]
+key = "w"
+description = "Move to next word start (selects the word)"
+
+[[exercises.commands]]
+key = "b"
+description = "Move to previous word start"
+
+[[exercises.commands]]
+key = "e"
+description = "Move to next word end"
+
+[[exercises.commands]]
+key = "W"
+description = "Move to next WORD start (ignores punctuation)"
+
+[[exercises.commands]]
+key = "B"
+description = "Move to previous WORD start"
+
+[[exercises.commands]]
+key = "E"
+description = "Move to next WORD end"
+
+[[exercises]]
+id = "01-movement/03-find-and-till"
+title = "Find and Till"
+category = "Movement"
+difficulty = 1
+notes = """
+NOTE: Unlike Vim, these work ACROSS LINES in Helix!
+
+MNEMONIC: f=find (on it), t=till (before it)
+"""
+instructions = """
+Each line has content between pipe | characters.
+Delete the content BETWEEN the pipes, keeping the pipes.
+
+Strategy:
+1. Move cursor to the first |
+2. Press  t |  to select till the next pipe (but not the pipe)
+3. Wait — that selects the | too. Instead: move one right with l
+4. Then  t |  to select up to (but not including) the next |
+5. Press  d  to delete
+"""
+hints = [
+  "Position cursor on the first |, then press l to move one character right (onto the content to delete).",
+  "Now press t | — this selects from cursor to just before the closing |.",
+  "Press d to delete the selection. The pipes remain.",
+  "Alternatively, use m i | (match inside vertical bars) which is covered in the text objects module. If you already know it, feel free to use it!",
+]
+
+[[exercises.commands]]
+key = "f <char>"
+description = "Find next occurrence of char (lands ON the char)"
+
+[[exercises.commands]]
+key = "F <char>"
+description = "Find previous occurrence of char"
+
+[[exercises.commands]]
+key = "t <char>"
+description = "Till next occurrence of char (lands BEFORE the char)"
+
+[[exercises.commands]]
+key = "T <char>"
+description = "Till previous occurrence of char"
+
+[[exercises.commands]]
+key = "Alt-."
+description = "Repeat the last f/t/F/T motion"
+
+[[exercises]]
+id = "01-movement/04-line-navigation"
+title = "Line Navigation"
+category = "Movement"
+difficulty = 1
+notes = "MNEMONIC: g=goto, h=home(left), l=last(right), s=start(non-blank)"
+instructions = """
+Each line has trailing text after a # that should be removed.
+The text before # should remain, with no trailing spaces.
+
+Strategy for each line:
+1. Use j/k to reach the line
+2. Press f # to jump to the #
+3. Use v then g l to extend selection to end of line
+4. Press d to delete
+"""
+hints = [
+  "On the first line, press f # to find the # character.",
+  "You need to also select the space before #. Try T (first non-space char going backward) or just use h to go left.",
+  "Once on the space before #, press v g l to extend selection to end of line, then d to delete.",
+  "Alternative: f # then press v then g l then d. Or: position before the space, then press d then g l.",
+]
+
+[[exercises.commands]]
+key = "g h"
+description = "Go to start of line"
+
+[[exercises.commands]]
+key = "g l"
+description = "Go to end of line"
+
+[[exercises.commands]]
+key = "g s"
+description = "Go to first non-whitespace character of line"
+
+[[exercises.commands]]
+key = "g g"
+description = "Go to start of file (or line N with count)"
+
+[[exercises.commands]]
+key = "g e"
+description = "Go to end of file"
+
+[[exercises]]
+id = "01-movement/05-scrolling-and-jumps"
+title = "Scrolling and Jumps"
+category = "Movement"
+difficulty = 1
+notes = ""
+instructions = """
+This exercise has many lines. Scattered through them are lines
+marked with >>> that contain a word in CAPS. Collect all the
+CAPS words and write them on the ANSWER line at the bottom,
+separated by spaces.
+
+Use Ctrl-d/Ctrl-u to scroll quickly. Use / to search if you
+want, but try scrolling first to build the habit.
+"""
+hints = [
+  "Use Ctrl-d to scroll down half a page at a time.",
+  "When you find a >>> line, note the CAPS word.",
+  "After finding all three words, navigate to the ANSWER line and use c to change the placeholder text.",
+  "Try z z to center the current line if you lose track of where you are.",
+]
+
+[[exercises.commands]]
+key = "Ctrl-d"
+description = "Half page down"
+
+[[exercises.commands]]
+key = "Ctrl-u"
+description = "Half page up"
+
+[[exercises.commands]]
+key = "Ctrl-f"
+description = "Full page down"
+
+[[exercises.commands]]
+key = "Ctrl-b"
+description = "Full page up"
+
+[[exercises.commands]]
+key = "Ctrl-o"
+description = "Jump backward on jumplist"
+
+[[exercises.commands]]
+key = "Ctrl-i"
+description = "Jump forward on jumplist"
+
+[[exercises.commands]]
+key = "z z"
+description = "Center current line on screen (view mode)"
+
+[[exercises]]
+id = "02-selection/01-line-selection"
+title = "Line Selection"
+category = "Selection"
+difficulty = 1
+notes = """
+MNEMONIC: x = line (think "x marks the whole line")
+
+NOTE: In Helix, x selects a line. In Vim, x deletes a character.
+      This is one of the biggest differences!
+"""
+instructions = """
+Delete all lines that contain the word "REMOVE".
+Keep all other lines exactly as they are.
+
+Strategy:
+1. Move to a line containing REMOVE
+2. Press x to select the entire line
+3. Press d to delete it
+
+For consecutive REMOVE lines, press x multiple times to
+extend the selection across all of them, then d once.
+"""
+hints = [
+  "Move to \"REMOVE this line.\" and press x then d.",
+  "For the two consecutive REMOVE lines, press x twice to select both, then d to delete them together.",
+  "If you accidentally select the wrong line, press ; to collapse the selection back to a cursor.",
+]
+
+[[exercises.commands]]
+key = "x"
+description = "Select the current line (repeat to extend to more lines)"
+
+[[exercises.commands]]
+key = "X"
+description = "Extend selection to full line bounds"
+
+[[exercises.commands]]
+key = "d"
+description = "Delete the selection"
+
+[[exercises]]
+id = "02-selection/02-extend-mode"
+title = "Extend Mode"
+category = "Selection"
+difficulty = 1
+notes = """
+In select mode, ALL motions EXTEND the selection instead of
+replacing it. This is like Vim's visual mode but integrated
+into Helix's selection-first model.
+"""
+instructions = """
+Each line has a phrase enclosed in << >> markers.
+Select from << to >> (inclusive) using extend mode, then delete.
+
+Strategy:
+1. Position cursor on the first <
+2. Press v to enter extend mode
+3. Use f > then ; or just l repeatedly to reach past >>
+4. Press d to delete
+
+The result should have no << >> markers or their contents.
+"""
+hints = [
+  "Move to <, press v, then f > to jump to the first >. But you need to include the second > too.",
+  "After f >, press l to extend one more character to include the closing >, then d.",
+  "Alternative: f < to land on first <, then v f > l d.",
+  "Another approach: use / to search for <<.*?>> pattern, but that's a more advanced technique.",
+]
+
+[[exercises.commands]]
+key = "v"
+description = "Enter select (extend) mode"
+
+[[exercises.commands]]
+key = "v"
+description = "Press again to exit back to normal mode"
+
+[[exercises.commands]]
+key = "Esc"
+description = "Also exits select mode"
+
+[[exercises]]
+id = "02-selection/03-collapse-and-flip"
+title = "Collapse and Flip"
+category = "Selection"
+difficulty = 1
+notes = """
+In Helix, every cursor is a selection with an anchor and a head.
+  ;  collapses the selection to just the cursor position.
+  Alt-;  swaps which end is the anchor and which is the head.
+"""
+instructions = """
+This exercise practices the "select then refine" workflow.
+
+Each line has two words in CAPS. Delete ONLY the second one.
+
+Strategy:
+1. Use / to search for a CAPS word (or navigate manually)
+2. If you accidentally select too much, use ; to collapse
+   and try again
+3. Select precisely the second CAPS word, then d
+
+This teaches you to use ; as a "reset" when your selection
+goes wrong — a crucial habit in Helix.
+"""
+hints = [
+  "On the first line, navigate to LAZY. Press w to select the word, then d to delete it.",
+  "If you overshoot and select too much, press ; to collapse back to a cursor and start over.",
+  "The key habit: ; is your \"undo selection\" — use it freely whenever you need to restart a selection.",
+]
+
+[[exercises.commands]]
+key = ";"
+description = "Collapse selection to a single cursor"
+
+[[exercises.commands]]
+key = "Alt-;"
+description = "Flip selection (swap anchor and cursor)"
+
+[[exercises]]
+id = "02-selection/04-select-all"
+title = "Select All"
+category = "Selection"
+difficulty = 1
+notes = """
+% is powerful when combined with other operations:
+  %  then  s  — select regex matches within the whole file
+  %  then  >  — indent everything
+  %  then  y  — yank the whole file
+"""
+instructions = """
+This text has inconsistent indentation. Some lines have 2-space
+indent, some have 4-space, and some have none.
+
+Your goal: Remove ALL leading whitespace from every line so
+everything is flush left.
+
+Strategy:
+1. Press % to select the entire practice text
+2. Press < repeatedly to unindent until all lines are flush left
+
+Note: You only need to work within the PRACTICE section.
+Select just the practice lines (use x to select lines or
+manually position), then < to unindent.
+"""
+hints = [
+  "Select the practice text lines using x (repeat for each line) or use v then j to extend down.",
+  "Press < to unindent. Repeat < until all leading whitespace is removed.",
+  "If some lines still have whitespace, select those specific lines with x and press < again.",
+  "The goal is every line starts at column 1 — no leading spaces at all.",
+]
+
+[[exercises.commands]]
+key = "%"
+description = "Select the entire file contents"
+
+[[exercises]]
+id = "03-changes/01-delete-and-change"
+title = "Delete and Change"
+category = "Changes"
+difficulty = 1
+notes = """
+The key insight: in Helix you SELECT first, then ACT.
+  Vim:   dw  (delete word)
+  Helix: wd  (select word, then delete)
+
+  Vim:   cw  (change word)
+  Helix: wc  (select word, then change)
+"""
+instructions = """
+Replace each animal name with the replacement shown in parens.
+Use w to select the word, then c to change it.
+
+After pressing c, you'll enter insert mode — type the new word,
+then press Esc to return to normal mode.
+"""
+hints = [
+  "Move to \"cat\", press w to select it, then c.",
+  "You're now in insert mode. Type \"dog\" then Esc.",
+  "Now delete the hint text \" (dog)\" — select it and d.",
+  "Repeat for each line. Remember: w c <type> Esc is the core pattern for \"change a word\" in Helix.",
+]
+
+[[exercises.commands]]
+key = "d"
+description = "Delete selection (yanks to register)"
+
+[[exercises.commands]]
+key = "c"
+description = "Change selection (delete + enter insert mode)"
+
+[[exercises.commands]]
+key = "Alt-d"
+description = "Delete selection WITHOUT yanking"
+
+[[exercises.commands]]
+key = "Alt-c"
+description = "Change selection WITHOUT yanking"
+
+[[exercises]]
+id = "03-changes/02-yank-and-paste"
+title = "Yank and Paste"
+category = "Changes"
+difficulty = 1
+notes = ""
+instructions = """
+The first line contains a template. Copy it and use it to
+replace the placeholder text on each subsequent line.
+
+Strategy:
+1. On line 1, press x to select the line, then y to yank
+2. Move to line 2, press x to select it
+3. Press R to replace with the yanked text
+4. Repeat for lines 3 and 4
+"""
+hints = [
+  "Select the first line with x, yank with y.",
+  "Move down to REPLACE_ME_1, select with x.",
+  "Press R to replace the selection with \"Hello, World!\"",
+  "R replaces the current selection with register contents. This is different from p (paste after) and P (paste before).",
+]
+
+[[exercises.commands]]
+key = "y"
+description = "Yank (copy) selection to register"
+
+[[exercises.commands]]
+key = "p"
+description = "Paste after selection"
+
+[[exercises.commands]]
+key = "P"
+description = "Paste before selection"
+
+[[exercises.commands]]
+key = "R"
+description = "Replace selection with yanked text"
+
+[[exercises]]
+id = "03-changes/03-undo-redo-repeat"
+title = "Undo, Redo, and Repeat"
+category = "Changes"
+difficulty = 1
+notes = """
+NOTE: Helix uses U for redo (not Ctrl-r like Vim).
+      Some editors (e.g. Zed) also support Ctrl-r as a non-standard extra.
+"""
+instructions = """
+Transform each line by adding the prefix "DONE: " before it.
+
+Efficient strategy using repeat (.):
+1. Go to the first line
+2. Press g h to go to line start (or I to insert at start)
+3. Type "DONE: " then Esc
+4. Move to the next line
+5. Press . to repeat the insertion
+6. Repeat for all lines
+
+If you make a mistake, press u to undo!
+"""
+hints = [
+  "On \"Buy groceries\", press I to enter insert mode at line start. Type \"DONE: \" then Esc.",
+  "Press j to move down, then . to repeat.",
+  "The . command repeats your last insert — the \"DONE: \" text gets inserted at the cursor position.",
+  "If . inserts in the wrong place, try I then Esc first to position correctly, then . on subsequent lines.",
+]
+
+[[exercises.commands]]
+key = "u"
+description = "Undo"
+
+[[exercises.commands]]
+key = "U"
+description = "Redo"
+
+[[exercises.commands]]
+key = "."
+description = "Repeat last insert/change"
+
+[[exercises]]
+id = "03-changes/04-indent-and-join"
+title = "Indent and Join"
+category = "Changes"
+difficulty = 1
+notes = ""
+instructions = """
+Part A: The HTML below is completely flat. Indent it properly.
+Select lines that should be indented and press > once for each
+level of nesting.
+
+Part B: The sentence at the bottom is split across multiple
+lines. Select all those lines and press J to join them.
+"""
+hints = [
+  "For <head> and </head>, select both with x x, press > once for one level of indent.",
+  "For <title>, select with x, press > twice (>> = 2 levels).",
+  "Same pattern for <body>, </body>, and <p>.",
+  "For the split sentence, select all 5 lines with x x x x x (or first line then v then 4j), then J to join.",
+]
+
+[[exercises.commands]]
+key = ">"
+description = "Indent selection"
+
+[[exercises.commands]]
+key = "<"
+description = "Unindent selection"
+
+[[exercises.commands]]
+key = "J"
+description = "Join lines (collapse selection into one line)"
+
+[[exercises]]
+id = "03-changes/05-case-and-replace"
+title = "Case and Replace"
+category = "Changes"
+difficulty = 1
+notes = ""
+instructions = """
+Part A: Convert the SHOUTING lines to lowercase.
+Part B: Convert the whispering lines to UPPERCASE.
+Part C: Replace the dashes with equals signs.
+
+For Part A: Select the text, press ` (backtick) for lowercase.
+For Part B: Select the text, press Alt-` for uppercase.
+For Part C: Select the dashes, press r then = .
+"""
+hints = [
+  "For \"THIS IS TOO LOUD\", press x to select the line, then ` (backtick) to convert to lowercase.",
+  "For \"this is too quiet\", press x then Alt-` to convert to uppercase.",
+  "For the dashes, press x to select, then r then = . r replaces every character in the selection with the character you type next.",
+]
+
+[[exercises.commands]]
+key = "~"
+description = "Toggle case of selection"
+
+[[exercises.commands]]
+key = "`"
+description = "Convert selection to lowercase"
+
+[[exercises.commands]]
+key = "Alt-`"
+description = "Convert selection to UPPERCASE"
+
+[[exercises.commands]]
+key = "r"
+description = "Replace each character in selection with a given char"
+
+[[exercises]]
+id = "04-text-objects/01-delimiter-objects"
+title = "Delimiter Objects"
+category = "Text Objects"
+difficulty = 1
+notes = """
+MNEMONIC: m = match, i = inside, a = around
+
+The "inside" variant selects only the content between delimiters.
+The "around" variant selects the content AND the delimiters themselves.
+"""
+instructions = """
+For each line, delete the content INSIDE the delimiters, leaving
+the empty delimiters in place.
+
+Strategy:
+1. Place your cursor anywhere between the delimiters
+2. Press m i ( (or the appropriate delimiter key)
+3. Press d to delete the selected content
+
+Work through each line, matching the expected output.
+"""
+hints = [
+  "Place cursor on \"x\" in calculate(x + y * 2), then m i ( d.",
+  "For quotes, cursor on any character between the quotes, then m i \" d.",
+  "The last line has nested delimiters. Start with the inner ones first: the quotes inside createElement, then the braces for the object.",
+  "If you select too much, press ; to collapse and retry.",
+]
+
+[[exercises.commands]]
+key = "m i ("
+description = "Select INSIDE parentheses (content only)"
+
+[[exercises.commands]]
+key = "m i \""
+description = "Select INSIDE double quotes (content only)"
+
+[[exercises.commands]]
+key = "m i {"
+description = "Select INSIDE curly braces (content only)"
+
+[[exercises.commands]]
+key = "m i ["
+description = "Select INSIDE square brackets (content only)"
+
+[[exercises.commands]]
+key = "m a ("
+description = "Select AROUND parentheses (includes delimiters)"
+
+[[exercises.commands]]
+key = "m a \""
+description = "Select AROUND double quotes (includes delimiters)"
+
+[[exercises]]
+id = "04-text-objects/02-word-paragraph"
+title = "Word and Paragraph Objects"
+category = "Text Objects"
+difficulty = 2
+notes = """
+MNEMONIC: w = word, p = paragraph
+
+"Inside word" selects just the word characters.
+"Around word" includes adjacent whitespace — useful for cleanly
+removing a word without leaving double spaces.
+"""
+instructions = """
+Part 1: In the first paragraph, change "terrible" to "excellent"
+        and "failures" to "successes" using m i w then c.
+
+Part 2: Delete the entire second paragraph using m a p then d.
+        (Place cursor anywhere in the second paragraph first.)
+
+Part 3: The third paragraph should remain untouched.
+"""
+hints = [
+  "Move to \"terrible\", press m i w to select just that word, then c to change it. Type \"excellent\" and press Esc.",
+  "Move to \"failures\", press m i w then c, type \"successes\".",
+  "For the second paragraph, place cursor on any word in it, press m a p to select the whole paragraph including the blank lines around it, then d to delete.",
+  "Using m a p (around) instead of m i p (inside) ensures the blank lines are also removed, avoiding extra gaps.",
+]
+
+[[exercises.commands]]
+key = "m i w"
+description = "Select INSIDE word (the word itself, no surrounding space)"
+
+[[exercises.commands]]
+key = "m a w"
+description = "Select AROUND word (includes trailing/leading whitespace)"
+
+[[exercises.commands]]
+key = "m i p"
+description = "Select INSIDE paragraph (lines of text, no surrounding blanks)"
+
+[[exercises.commands]]
+key = "m a p"
+description = "Select AROUND paragraph (includes surrounding blank lines)"
+
+[[exercises]]
+id = "04-text-objects/03-treesitter-objects"
+title = "Tree-sitter Objects"
+category = "Text Objects"
+difficulty = 2
+notes = """
+NOTE: Tree-sitter text objects require the appropriate language
+grammar to be active. Open this file as JavaScript/TypeScript
+for best results, or rename it to .js temporarily.
+"""
+instructions = """
+1. Delete the entire deprecated function (validateEmail) using
+   m a f then d.
+
+2. In formatUser, delete the "role" argument from the parameter
+   list using m a a then d (place cursor on "role" first).
+
+3. In calculateTotal, delete the function body (but keep the
+   signature) using m i f then d.
+
+Note: If tree-sitter objects are not active, you can practice
+the key sequences and understand the concept — then try on a
+real source file later.
+"""
+hints = [
+  "Place cursor anywhere inside validateEmail's body, then m a f to select the entire function, then d.",
+  "Don't forget to also delete the \"// DEPRECATED\" comment line above validateEmail.",
+  "For deleting the \"role\" argument, place cursor on the word \"role\" in the parameter list, then m a a d. The \"around\" variant should grab the preceding comma too.",
+  "For the function body, place cursor inside calculateTotal's body, then m i f d. This selects just the body contents.",
+]
+
+[[exercises.commands]]
+key = "m i f"
+description = "Select INSIDE function (the function body)"
+
+[[exercises.commands]]
+key = "m a f"
+description = "Select AROUND function (entire function including signature)"
+
+[[exercises.commands]]
+key = "m i a"
+description = "Select INSIDE argument (a single argument in a parameter list)"
+
+[[exercises.commands]]
+key = "m a a"
+description = "Select AROUND argument (includes trailing comma/whitespace)"
+
+[[exercises.commands]]
+key = "m i c"
+description = "Select INSIDE class/type definition"
+
+[[exercises]]
+id = "04-text-objects/04-combining-objects"
+title = "Combining Objects with Actions"
+category = "Text Objects"
+difficulty = 3
+notes = """
+These are not special commands — they are natural combinations:
+  1. m i/a + delimiter = SELECT the text object
+  2. c / d / y         = ACT on the selection
+"""
+instructions = """
+1. Change the string "PLACEHOLDER" to "production" in the config
+   line. (Cursor inside quotes, m i " c, type new text, Esc.)
+
+2. Change the API URL from "http://staging.internal/api" to
+   "https://api.example.com/v2".
+
+3. Delete everything inside the if-block's braces (the two
+   console.log lines) so only empty braces {} remain.
+
+4. Delete the entire [LEGACY] tag including its brackets from
+   the comment line.
+
+5. Yank (copy) the arguments inside fetchData(...) and paste
+   them into processData() to replace "TODO".
+"""
+hints = [
+  "For \"PLACEHOLDER\", put cursor on any letter between the quotes and press m i \" c. Type \"production\", then Esc.",
+  "Same technique for the API URL: m i \" c then type the new URL.",
+  "For the if-block, place cursor on a console.log line, press m i { d. This selects everything between { and }.",
+  "For [LEGACY], cursor on \"LEGACY\", then m a [ d. The \"around\" variant includes the brackets themselves. You will also need to delete the extra space left behind.",
+  "For the yank-paste workflow: cursor inside fetchData's parens, m i ( y, then move to \"TODO\", m i ( to select it, then p to paste over it.",
+]
+
+[[exercises.commands]]
+key = "m i \" c"
+description = "Change inside quotes (select + enter insert mode)"
+
+[[exercises.commands]]
+key = "m a f d"
+description = "Delete around function (remove entire function)"
+
+[[exercises.commands]]
+key = "m i ( y"
+description = "Yank inside parentheses (copy content)"
+
+[[exercises.commands]]
+key = "m i { d"
+description = "Delete inside braces (empty the block)"
+
+[[exercises.commands]]
+key = "m a [ d"
+description = "Delete around brackets (remove brackets and content)"
+
+[[exercises]]
+id = "05-surround/01-add-surround"
+title = "Add Surround"
+category = "Surround"
+difficulty = 1
+notes = """
+MNEMONIC: m s = match surround (add)
+
+The workflow is: SELECT text first, then m s + character.
+  1. Use w, e, v, or any selection method to highlight text
+  2. Press m s then the delimiter character
+"""
+instructions = """
+Wrap each marked word or phrase with the delimiter shown in the
+comment at the end of each line. Select the target text first,
+then apply the surround.
+
+For single words, use w or m i w to select.
+For multi-word phrases, use v then motion to extend selection.
+"""
+hints = [
+  "For \"Steve\": move to S, press w to select the word, then m s \" to wrap in double quotes.",
+  "For \"Hello, world\": move to H, press v then f ; (find semicolon) or use v with motions to select the phrase, then m s \" to add quotes.",
+  "For [95, 87, 72, 100]: select from 9 to the last 0 using v and motion, then m s [ for square brackets.",
+  "For calculateTotal(items): select \"items\" with w, then m s ( to wrap in parentheses. Then select the whole expression if parens should cover \"items\" only.",
+  "The last line uses m s < for angle brackets around IMPORTANT.",
+]
+
+[[exercises.commands]]
+key = "m s ("
+description = "Surround selection with parentheses"
+
+[[exercises.commands]]
+key = "m s \""
+description = "Surround selection with double quotes"
+
+[[exercises.commands]]
+key = "m s {"
+description = "Surround selection with curly braces"
+
+[[exercises.commands]]
+key = "m s ["
+description = "Surround selection with square brackets"
+
+[[exercises.commands]]
+key = "m s <"
+description = "Surround selection with angle brackets"
+
+[[exercises]]
+id = "05-surround/02-replace-surround"
+title = "Replace Surround"
+category = "Surround"
+difficulty = 2
+notes = """
+MNEMONIC: m r = match replace — first char is OLD, second is NEW
+
+The workflow:
+  1. Place cursor inside the delimiters you want to change
+  2. Press m r
+  3. Press the OLD delimiter character
+  4. Press the NEW delimiter character
+"""
+instructions = """
+Change the delimiters on each line to match the expected output.
+Place your cursor between the delimiters, then use m r to swap.
+"""
+hints = [
+  "For line 1, cursor inside the parens, then m r ( [ to change ( ) to [ ].",
+  "For the double-to-single quote change, cursor inside the quotes, then m r \" ' (old = \", new = ').",
+  "For {x, y} to (x, y), cursor inside braces, m r { (.",
+  "Watch out for line 5 — it has nested quotes. Make sure your cursor is inside the OUTER quotes before pressing m r \" '. You may need to do the inner quotes separately.",
+  "The pattern is always the same: position, m r, old, new.",
+]
+
+[[exercises.commands]]
+key = "m r ( ["
+description = "Replace surrounding ( ) with [ ]"
+
+[[exercises.commands]]
+key = "m r \" '"
+description = "Replace surrounding \" \" with ' '"
+
+[[exercises.commands]]
+key = "m r { ("
+description = "Replace surrounding { } with ( )"
+
+[[exercises.commands]]
+key = "m r [ {"
+description = "Replace surrounding [ ] with { }"
+
+[[exercises]]
+id = "05-surround/03-delete-surround"
+title = "Delete Surround"
+category = "Surround"
+difficulty = 2
+notes = """
+MNEMONIC: m d = match delete — removes delimiters, keeps content
+
+The workflow:
+  1. Place cursor anywhere inside the delimiters
+  2. Press m d
+  3. Press the delimiter character to remove
+
+The content is preserved; only the surrounding characters vanish.
+"""
+instructions = """
+Each line has unnecessary or redundant delimiters. Remove them
+with m d + the appropriate character. Some lines have nested
+delimiters — only remove the one specified by context.
+"""
+hints = [
+  "For (\"Steve\"), cursor inside parens, m d ( removes the outer parentheses, leaving \"Steve\".",
+  "For (result), cursor on result, m d ( leaves just result.",
+  "For (((42))), you need to remove TWO layers of parens. Press m d ( twice (repositioning cursor if needed).",
+  "For [[1, 2, 3]], cursor inside, m d [ removes one layer. Be careful to only remove the outer brackets.",
+  "For {\"key\"}, cursor between braces (but outside quotes), m d { removes the braces leaving \"key\".",
+]
+
+[[exercises.commands]]
+key = "m d ("
+description = "Delete surrounding parentheses"
+
+[[exercises.commands]]
+key = "m d \""
+description = "Delete surrounding double quotes"
+
+[[exercises.commands]]
+key = "m d {"
+description = "Delete surrounding curly braces"
+
+[[exercises.commands]]
+key = "m d ["
+description = "Delete surrounding square brackets"
+
+[[exercises.commands]]
+key = "m d '"
+description = "Delete surrounding single quotes"
+
+[[exercises]]
+id = "05-surround/04-surround-workflows"
+title = "Surround Workflows"
+category = "Surround"
+difficulty = 3
+notes = """
+WORKFLOW: Multi-selection + Surround
+────────────────────────────────────
+  To change ALL (parens) to [brackets] in a block:
+  1. Select one ( with f (
+  2. % to select ALL ( in the file/selection
+  3. m r ( [ to replace each one
+
+  To wrap multiple words at once:
+  1. Select the first word with w
+  2. Use C or % to add cursors for other instances
+  3. m s " to surround all selections at once
+"""
+instructions = """
+1. In the CSS block, change every (var-name) to [var-name]
+   using multi-selection + surround replace.
+
+2. In the log statements, remove ALL double quotes around the
+   log levels (INFO, WARN, ERROR) using multi-selection + m d.
+
+3. Wrap each bare config key (host, port, debug) with double
+   quotes to make valid JSON.
+"""
+hints = [
+  "For the CSS block — place cursor inside the first (, press m i ( to select --primary, then press m r ( [ to switch parens to brackets. Repeat for each line, or use a multi-selection approach.",
+  "Multi-select approach: search for var( using / v a r (, press Enter, then select all matches with %, then m r ( [ to replace all at once.",
+  "For the log levels, you need to remove quotes from just the FIRST argument. Place cursor in \"INFO\", m d \" to remove its quotes. Repeat for WARN and ERROR.",
+  "For the JSON keys, select host with w, then m s \" to wrap it. Repeat for port and debug.",
+  "Advanced: search for the pattern of bare keys using /^\\s+\\w+ and multi-select, then m s \" on all of them.",
+]
+
+[[exercises.commands]]
+key = "%"
+description = "Select all matching instances (after initial selection)"
+
+[[exercises.commands]]
+key = "m s"
+description = "Add surround to selection"
+
+[[exercises.commands]]
+key = "m r"
+description = "Replace surround"
+
+[[exercises.commands]]
+key = "m d"
+description = "Delete surround"
+
+[[exercises.commands]]
+key = "C"
+description = "Copy selection to next line (multi-cursor)"
+
+[[exercises.commands]]
+key = "A-("
+description = "Select inside matching delimiters (Alt + open paren)"
+
+[[exercises]]
+id = "06-multi-selection/01-regex-select"
+title = "Regex Select"
+category = "Multi-Selection"
+difficulty = 2
+notes = """
+This is the KILLER feature of Helix. Instead of :%s/old/new/g,
+you select text, split it into sub-selections, and edit them all
+simultaneously with multiple cursors — live.
+"""
+instructions = """
+The paragraph below uses "color" five times. You need to change
+every instance to "colour" (British spelling) — all at once.
+
+The Helix way:
+1. Select the entire practice block (use x to select lines, or
+   position before the first line and v then j to extend)
+2. Press  s  — a prompt appears at the bottom
+3. Type   color   and press Enter
+   -> All five instances are now individual selections!
+4. Press  c  — all five are deleted, you're in insert mode
+   at every cursor simultaneously
+5. Type   colour
+6. Press  Esc  — done. Five replacements, zero repetition.
+
+Feel the power. This is multi-cursor editing driven by regex,
+and it works on ANY pattern.
+"""
+hints = [
+  "Make sure your selection covers ALL five lines before pressing s. Use x repeatedly or v + j.",
+  "After pressing s, type \"color\" (not \"colour\") and Enter. You should see 5 selections highlighted.",
+  "Press c (not d!) — this deletes and enters insert mode. Then type \"colour\" and all five update at once.",
+  "If you only got some matches, your initial selection probably didn't cover all the text. Undo with u and make a bigger selection.",
+]
+
+[[exercises.commands]]
+key = "s"
+description = "Select all regex matches within the current selection"
+
+[[exercises.commands]]
+key = "c"
+description = "Change (delete selection and enter insert mode)"
+
+[[exercises]]
+id = "06-multi-selection/02-split-selection"
+title = "Split Selection"
+category = "Multi-Selection"
+difficulty = 2
+notes = """
+s selects matches WITHIN a selection -> keeps the matches.
+S splits ON the pattern -> keeps everything BETWEEN matches.
+
+They are complementary:
+  s "," -> selects every comma
+  S "," -> selects every chunk between commas
+"""
+instructions = """
+TASK A — Split a comma-separated list into separate lines.
+
+1. Select the comma-separated line (press x)
+2. Press  S  (capital S) to split
+3. Type   ,\\s*   and press Enter
+   -> Each item is now its own selection
+4. Open a new line after each: you need to collapse and
+   restructure. The simplest approach:
+   a. After splitting, press  ms  to merge selections
+      Actually, easier: let's use a different approach.
+
+Better workflow:
+1. Select the line with x
+2. Press  s  (lowercase) and type   ,\\s*   and Enter
+   -> This selects all the ", " separators
+3. Press  c  to change them
+4. Press  Enter  to replace each comma-space with a newline
+5. Press  Esc
+
+TASK B — For the second block, select all lines with Alt-s,
+then add a prefix to each.
+
+1. Select all lines in the block (use x repeatedly or v + j)
+2. Press  Alt-s  to split into one selection per line
+3. Press  ms  (match surround) — actually, press  I  (capital)
+   to insert at the start of each selection
+4. Type   - [ ]   (dash, space, bracket, space, bracket, space)
+5. Press  Esc
+"""
+hints = [
+  "For Task A, the key insight is: select the commas with s, then replace them with newlines using c + Enter.",
+  "For Task B, after Alt-s gives you one selection per line, use I (capital I) to insert at the beginning of each selection simultaneously.",
+  "If your splits include unwanted whitespace, try the regex  ,\\s*  instead of just  ,  to consume trailing spaces.",
+  "Remember: s keeps matches, S keeps everything else. For replacing delimiters, s is usually what you want.",
+]
+
+[[exercises.commands]]
+key = "S"
+description = "Split selection on a regex pattern"
+
+[[exercises.commands]]
+key = "Alt-s"
+description = "Split selection on newlines (one selection per line)"
+
+[[exercises]]
+id = "06-multi-selection/03-duplicate-cursors"
+title = "Duplicate Cursors"
+category = "Multi-Selection"
+difficulty = 2
+notes = """
+These create column-style editing — perfect for adding the same
+text to multiple consecutive lines.
+"""
+instructions = """
+The list below needs "- [ ] " (a markdown checkbox) added to
+the beginning of every line.
+
+Strategy:
+1. Move to the beginning of the first line ("Clean up")
+   Press  gh  to go to line start (or Home key)
+2. Now press  C  four times — this copies your cursor down to
+   each subsequent line. You should see 5 cursors total, one
+   at the start of each line.
+3. Press  i  to enter insert mode (at all 5 cursors)
+4. Type   - [ ]   (dash, space, open bracket, space, close
+   bracket, space)
+5. Press  Esc
+
+All five lines now have checkboxes. This is column editing,
+Helix style.
+"""
+hints = [
+  "Make sure your cursor is at column 1 of the first line before you start pressing C. Use gh or Home.",
+  "Press C exactly 4 times (not 5) — you already have one cursor on the first line, so 4 copies gives you 5.",
+  "If your cursors are misaligned, undo with u and try again. All lines must start at the same column for C to work cleanly.",
+  "Alt-C works the same but upward — useful when you're at the bottom of a block and want to add cursors above.",
+]
+
+[[exercises.commands]]
+key = "C"
+description = "Copy selection to the next line (add cursor below)"
+
+[[exercises.commands]]
+key = "Alt-C"
+description = "Copy selection to the previous line (add cursor above)"
+
+[[exercises]]
+id = "06-multi-selection/04-keep-remove"
+title = "Keep and Remove Selections"
+category = "Multi-Selection"
+difficulty = 3
+notes = """
+After creating multiple selections (e.g., with s or S or Alt-s),
+K and Alt-K let you FILTER them. Think of it as grep for your
+selections.
+"""
+instructions = """
+The list below mixes fruits and vegetables. Your goal: delete
+all the vegetables, keeping only the fruits.
+
+Strategy:
+1. Select the entire list (use x on each line, or v + j)
+2. Press  Alt-s  to split into one selection per line
+   -> You now have 10 selections, one per line
+3. Press  Alt-K  to remove selections matching a pattern
+4. Type   carrot|broccoli|spinach|celery|kale   and Enter
+   -> The vegetable lines are deselected; only fruit lines
+     remain selected
+5. Now you need the opposite — select the vegetables to delete
+   them. Let's use a different approach:
+
+Better strategy:
+1. Select the entire list with x (repeated) or v + j
+2. Press  Alt-s  to split on newlines
+3. Press  K  (keep matching) and type:
+     apple|mango|banana|grape|orange
+   -> Now only the fruit lines are selected
+4. Press  Alt-;  to flip: now vegetables are selected
+   Wait — that selects the gaps. Instead:
+
+Simplest strategy:
+1. Select all list lines
+2. Press  Alt-s  (one selection per line)
+3. Press  Alt-K  and type   carrot|broccoli|spinach|celery|kale
+   -> Vegetables are removed from selections, fruits remain
+4. Press  d  to delete the UNselected lines?
+   No — d deletes the SELECTED text. We want the opposite.
+
+Correct approach — delete the vegetables:
+1. Select all list lines with x repeated or v + j
+2. Press  Alt-s  to get one selection per line
+3. Press  K  and type   carrot|broccoli|spinach|celery|kale
+   -> Now only vegetable lines are selected
+4. Press  d  to delete them
+"""
+hints = [
+  "First get one selection per line: select the block, then Alt-s.",
+  "K keeps selections that MATCH. Alt-K keeps selections that DON'T match. Think: K = grep, Alt-K = grep -v.",
+  "To delete vegetables, use K (keep matching) with the vegetable names, then d to delete those selections.",
+  "The regex uses | for \"or\":  carrot|broccoli|spinach|celery|kale",
+  "If leftover blank lines remain, undo and try again. Make sure each x or line selection captures the full line including the newline character.",
+]
+
+[[exercises.commands]]
+key = "K"
+description = "Keep only selections matching a regex"
+
+[[exercises.commands]]
+key = "Alt-K"
+description = "Remove selections matching a regex (keep non-matches)"
+
+[[exercises]]
+id = "06-multi-selection/05-rotate-and-align"
+title = "Rotate and Align Selections"
+category = "Multi-Selection"
+difficulty = 3
+notes = """
+When you have multiple selections, one is "primary" (highlighted
+differently). ( and ) cycle which one is primary — useful for
+inspecting or operating on specific selections.
+
+& is the alignment powerhouse: it pads selections with spaces so
+they all start at the same column.
+"""
+instructions = """
+The variable assignments below are messy — the = signs are all
+over the place. Make them line up neatly.
+
+Strategy:
+1. Select all the assignment lines (x repeated or v + j)
+2. Press  s  and type   =   then Enter
+   -> Every = sign is now its own selection
+3. Press  &  to align them
+   -> All = signs snap to the same column, padded with spaces
+
+Bonus — try ( and ) to cycle through your selections and see
+which one is primary. This is useful when you want to operate
+on just one of several selections (e.g., press , to keep only
+the primary selection).
+"""
+hints = [
+  "Select all six lines first. Make sure the selection covers every line fully.",
+  "After pressing s and typing = then Enter, you should see 6 selections, one on each = sign.",
+  "Press & once. The = signs should all jump to the same column (the rightmost position among them).",
+  "If extra whitespace appears, select the messy regions and use _ to trim. Or undo and try selecting just the = characters more precisely.",
+  "The alignment column is determined by the longest left-hand side — \"favorite_language\" — so all other = signs get padded to match.",
+]
+
+[[exercises.commands]]
+key = ")"
+description = "Rotate selections forward (cycle primary selection)"
+
+[[exercises.commands]]
+key = "("
+description = "Rotate selections backward"
+
+[[exercises.commands]]
+key = "&"
+description = "Align selections to the same column"
+
+[[exercises.commands]]
+key = "_"
+description = "Trim whitespace around selections"
+
+[[exercises]]
+id = "07-search/01-search-basics"
+title = "Search Basics"
+category = "Search"
+difficulty = 2
+notes = """
+Search in Helix creates a selection at the match — the found text
+IS your selection. This means you can immediately operate on it
+(delete, change, yank, etc.).
+"""
+instructions = """
+The log output below has several ERROR lines mixed with INFO
+lines. Your task: delete every line that contains ERROR.
+
+Strategy:
+1. Move to the beginning of the practice block
+2. Press  /  and type   ERROR   then Enter
+   -> Your cursor jumps to the first ERROR match
+3. Press  x  to extend the selection to the full line
+4. Press  d  to delete the line
+5. Press  n  to jump to the next ERROR match
+6. Repeat:  x  then  d  then  n
+7. Continue until all ERROR lines are gone
+
+There are 4 ERROR lines to remove. After you're done, only
+the 6 INFO lines should remain.
+"""
+hints = [
+  "After / ERROR Enter, you land on \"ERROR\" but you need to delete the whole line. Press x to select the line.",
+  "After deleting with d, press n to find the next match. The search pattern persists until you search again.",
+  "If n lands you on an INFO line's text that happens to have no match, the cursor wraps around the file. Just keep pressing n to find the next real match.",
+  "A faster approach once you know 6.1 (regex select): select all lines, s ERROR, x to extend each to full line, d to delete all at once. But for now, practice the search-navigate-delete loop.",
+]
+
+[[exercises.commands]]
+key = "/"
+description = "Search forward (type pattern, press Enter)"
+
+[[exercises.commands]]
+key = "?"
+description = "Search backward"
+
+[[exercises.commands]]
+key = "n"
+description = "Jump to next match"
+
+[[exercises.commands]]
+key = "N"
+description = "Jump to previous match"
+
+[[exercises]]
+id = "07-search/02-search-selection"
+title = "Search with Selection"
+category = "Search"
+difficulty = 2
+notes = """
+* is like "find other instances of this word." It automatically
+adds \\b word boundaries, so selecting "user" won't match "userName".
+
+Alt-* does an exact substring match — selecting "user" WILL match
+inside "userName".
+"""
+instructions = """
+The code below uses the variable "userName" in several places.
+Rename it to "accountName" everywhere.
+
+Strategy:
+1. Position your cursor on one instance of "userName"
+2. Select it: use  w  to select the word, or  viw  to select
+   inner word. Make sure you have exactly "userName" selected.
+3. Press  *  — this sets "userName" as the search pattern
+4. Now use the multi-selection approach:
+   a. Press  %  to select the entire file (or just the code block)
+   b. Press  s  and type   userName   then Enter
+      -> All instances become selections
+   c. Press  c  to change all of them
+   d. Type   accountName
+   e. Press  Esc
+
+Alternative (one at a time):
+1. Select "userName" and press *
+2. Press  c , type  accountName , press Esc
+3. Press  n  to jump to next, then  c  and type again
+4. Repeat for each instance
+
+There are 6 instances to rename.
+"""
+hints = [
+  "To select exactly \"userName\", place cursor on the u, then use  2w  or  e  to extend to the end of the word. Or use  viw  if the word boundaries work well.",
+  "* with word boundaries means searching for \"userName\" won't accidentally match \"userNameValidator\" or similar.",
+  "The multi-selection approach (select all, s, c) is faster than one-by-one when there are many matches.",
+  "Be careful with the string literal \"userName is required\" — you want to change that too, to \"accountName is required\".",
+  "If you accidentally change something wrong, press u to undo and try again.",
+]
+
+[[exercises.commands]]
+key = "*"
+description = "Use current selection as search pattern (word boundary)"
+
+[[exercises.commands]]
+key = "Alt-*"
+description = "Use current selection as exact search pattern (no boundaries)"
+
+[[exercises.commands]]
+key = "n"
+description = "Jump to next match"
+
+[[exercises.commands]]
+key = "N"
+description = "Jump to previous match"
+
+[[exercises]]
+id = "07-search/03-search-and-replace"
+title = "Search and Replace"
+category = "Search"
+difficulty = 3
+notes = """
+This replaces Vim's  :%s/old/new/g  command. In Helix, there
+is no separate "substitute" command — multi-selection IS the
+substitute command.
+
+Full sequence:  %  s  pattern  Enter  c  replacement  Esc
+"""
+instructions = """
+The configuration below has URLs using "http://" that must be
+upgraded to "https://" for security compliance.
+
+Workflow:
+1. Press  %  to select the entire practice block
+   (or select just the relevant lines with x or v + j)
+2. Press  s  to open the selection prompt
+3. Type   http://   and press Enter
+   -> All 6 instances of "http://" are now selected
+4. Press  c  to change them all simultaneously
+5. Type   https://
+6. Press  Esc
+
+That's it. Six replacements in six keystrokes after the
+initial selection:  %  s  http://  Enter  c  https://  Esc
+
+This is the Helix equivalent of:
+  Vim:     :%s/http:\\/\\//https:\\/\\//g
+  VS Code: Ctrl+H -> http:// -> https:// -> Replace All
+
+Notice how much more readable the Helix version is. No
+escaping slashes, no arcane syntax. Select, match, change.
+"""
+hints = [
+  "Make sure to type exactly  http://  in the search (s) prompt. This won't match \"http-spec\" or \"HTTP/2\" because those don't contain \"://\".",
+  "After s http:// Enter, verify you see 6 selections (one per URL line). The comment lines should NOT be matched because they say \"http-spec\" and \"HTTP/2\".",
+  "If you accidentally matched the wrong things, press Esc to cancel, then u to undo and start over.",
+  "Remember the mantra:  %  s  pattern  Enter  c  text  Esc. This is the universal find-and-replace in Helix. You will use this constantly.",
+  "For case-sensitive search, Helix uses smart case by default: all-lowercase patterns are case-insensitive, patterns with uppercase are case-sensitive. \"http://\" is all lowercase so it's case-insensitive, but \"HTTP\" in the comments won't match because the pattern looks for \"://\".",
+]
+
+[[exercises.commands]]
+key = "%"
+description = "Select the entire file"
+
+[[exercises.commands]]
+key = "s <regex>"
+description = "Select all matches within selection"
+
+[[exercises.commands]]
+key = "c"
+description = "Change all selections (delete + insert mode)"
+
+[[exercises.commands]]
+key = "<text>"
+description = "Type the replacement"
+
+[[exercises.commands]]
+key = "Esc"
+description = "Done"
+
+[[exercises]]
+id = "08-goto-mode/01-file-navigation"
+title = "File Navigation"
+category = "Goto Mode"
+difficulty = 3
+notes = "MNEMONIC: g = goto. Then: h=home, l=last, s=start, t=top, c=center, b=bottom"
+instructions = """
+This file simulates a config file. Make these changes:
+1. Add "# HEADER" as the very first line (use g g to go to top)
+2. Add "# FOOTER" as the very last line (use g e to go to bottom)
+3. On the indented lines, delete trailing whitespace (use g l
+   to see end of line, or use the $ approach)
+"""
+hints = [
+  "g g takes you to the start of the file. Press O to open a line above, type \"# HEADER\", then Esc.",
+  "g e takes you to the end. Press o to open a line below, type \"# FOOTER\", then Esc.",
+  "g w shows labels on every word — press a label key to jump directly there. Try it for quick navigation!",
+]
+
+[[exercises.commands]]
+key = "g g"
+description = "Go to start of file (or line N with a count)"
+
+[[exercises.commands]]
+key = "g e"
+description = "Go to end of file"
+
+[[exercises.commands]]
+key = "g h"
+description = "Go to start of line"
+
+[[exercises.commands]]
+key = "g l"
+description = "Go to end of line"
+
+[[exercises.commands]]
+key = "g s"
+description = "Go to first non-whitespace character"
+
+[[exercises.commands]]
+key = "g t"
+description = "Go to top of visible screen"
+
+[[exercises.commands]]
+key = "g c"
+description = "Go to center of visible screen"
+
+[[exercises.commands]]
+key = "g b"
+description = "Go to bottom of visible screen"
+
+[[exercises.commands]]
+key = "g ."
+description = "Go to last modification in file"
+
+[[exercises.commands]]
+key = "g w"
+description = "Goto word (shows labels, jump by label)"
+
+[[exercises]]
+id = "08-goto-mode/02-lsp-navigation"
+title = "LSP Navigation"
+category = "Goto Mode"
+difficulty = 3
+notes = """
+NOTE: These commands require an active language server. They work
+      best in real code files with proper LSP setup.
+"""
+instructions = """
+This exercise is conceptual — LSP commands need a real project.
+
+Practice the WORKFLOW by reading the code below and adding
+comments that describe where each g-command would take you.
+
+Add a comment after each marked line explaining the destination.
+"""
+hints = [
+  "g d goes to where something is DEFINED.",
+  "g i goes to where an interface is IMPLEMENTED.",
+  "g r goes to all REFERENCES (usages) of a symbol.",
+  "Try these commands in a real TypeScript project to see them in action!",
+]
+
+[[exercises.commands]]
+key = "g d"
+description = "Go to definition (LSP)"
+
+[[exercises.commands]]
+key = "g r"
+description = "Go to references (LSP)"
+
+[[exercises.commands]]
+key = "g y"
+description = "Go to type definition (LSP)"
+
+[[exercises.commands]]
+key = "g i"
+description = "Go to implementation (LSP)"
+
+[[exercises]]
+id = "08-goto-mode/03-buffer-navigation"
+title = "Buffer Navigation"
+category = "Goto Mode"
+difficulty = 3
+notes = "NOTE: H and L are Zed-specific additions for quick buffer switching."
+instructions = """
+Buffer navigation commands work across open files.
+This exercise teaches the concepts — practice them in your
+real workflow.
+
+For now: edit this file to fill in the command for each scenario.
+"""
+hints = [
+  "Replace ??? with the correct command from the COMMANDS TO LEARN section.",
+  "g a = alternate (last accessed), g m = modified.",
+  "H/L are non-standard Helix — they're Zed-specific additions mapped to the same actions as g p / g n.",
+]
+
+[[exercises.commands]]
+key = "g n"
+description = "Go to next buffer (open file)"
+
+[[exercises.commands]]
+key = "g p"
+description = "Go to previous buffer"
+
+[[exercises.commands]]
+key = "g a"
+description = "Go to last accessed file (alternate file)"
+
+[[exercises.commands]]
+key = "g m"
+description = "Go to last modified file"
+
+[[exercises.commands]]
+key = "H"
+description = "Previous buffer (Zed-specific, not standard Helix)"
+
+[[exercises.commands]]
+key = "L"
+description = "Next buffer (Zed-specific, not standard Helix)"
+
+[[exercises]]
+id = "08-goto-mode/04-zed-git-integration"
+title = "Zed Git Integration"
+category = "Goto Mode"
+difficulty = 3
+notes = "NOTE: These are ZED-SPECIFIC additions — not in native Helix!"
+instructions = """
+These git commands work on diff hunks in modified files.
+Fill in the workflow steps below.
+
+This is a conceptual exercise — practice these in a real
+git repository to see them in action.
+"""
+hints = [
+  "g o = toggle diff overlay visibility",
+  "g u = stage (like git add for that hunk) + jump to next",
+  "g U = unstage (reverse of g u)",
+  "g R = restore = discard changes (like git checkout --)",
+]
+
+[[exercises.commands]]
+key = "g o"
+description = "Toggle selected diff hunks (show/hide inline diff)"
+
+[[exercises.commands]]
+key = "g O"
+description = "Toggle staged status"
+
+[[exercises.commands]]
+key = "g u"
+description = "Stage current hunk and jump to next"
+
+[[exercises.commands]]
+key = "g U"
+description = "Unstage current hunk and jump to next"
+
+[[exercises.commands]]
+key = "g R"
+description = "Git restore (discard changes in hunk)"
+
+[[exercises]]
+id = "09-space-mode/01-pickers"
+title = "Pickers"
+category = "Space Mode"
+difficulty = 3
+notes = "MNEMONIC: Space = leader, f=file, b=buffer, g=git, j=jump"
+instructions = """
+Space mode pickers are your primary navigation tools.
+This exercise is a reference card — fill in the correct command
+for each navigation scenario.
+
+Practice these in your real workflow after completing this exercise.
+"""
+hints = [
+  "Space f is the most-used command — fuzzy file finder.",
+  "Space b shows a list of currently open buffers.",
+  "Space g shows git-modified files — great for reviews.",
+]
+
+[[exercises.commands]]
+key = "Space f"
+description = "File finder (fuzzy search)"
+
+[[exercises.commands]]
+key = "Space F"
+description = "File finder (from current directory)"
+
+[[exercises.commands]]
+key = "Space b"
+description = "Buffer picker (open files)"
+
+[[exercises.commands]]
+key = "Space g"
+description = "Changed files picker (git modified)"
+
+[[exercises.commands]]
+key = "Space j"
+description = "Jumplist picker"
+
+[[exercises.commands]]
+key = "Space '"
+description = "Reopen last picker"
+
+[[exercises]]
+id = "09-space-mode/02-lsp-commands"
+title = "LSP Commands"
+category = "Space Mode"
+difficulty = 3
+notes = ""
+instructions = """
+Match each development task to the correct Space command.
+"""
+hints = [
+  "Space k = knowledge (hover docs)",
+  "Space s = symbols (document), Space S = Symbols (workspace)",
+  "Space r = rename, Space a = actions",
+  "Space h = highlight (select all references)",
+]
+
+[[exercises.commands]]
+key = "Space k"
+description = "Hover documentation (show type/docs popup)"
+
+[[exercises.commands]]
+key = "Space s"
+description = "Document symbol picker (outline)"
+
+[[exercises.commands]]
+key = "Space S"
+description = "Workspace symbol picker (all files)"
+
+[[exercises.commands]]
+key = "Space d"
+description = "Go to diagnostic (error/warning)"
+
+[[exercises.commands]]
+key = "Space D"
+description = "Workspace diagnostics picker"
+
+[[exercises.commands]]
+key = "Space r"
+description = "Rename symbol (LSP)"
+
+[[exercises.commands]]
+key = "Space a"
+description = "Code actions (quick fixes, refactoring)"
+
+[[exercises.commands]]
+key = "Space h"
+description = "Select all references to symbol"
+
+[[exercises]]
+id = "09-space-mode/03-clipboard-and-comments"
+title = "Clipboard and Comments"
+category = "Space Mode"
+difficulty = 3
+notes = """
+NOTE: Space y/p uses the SYSTEM clipboard (shared with other apps).
+      Regular y/p uses Helix's internal register (editor-only).
+"""
+instructions = """
+Part A: Comment out the debug lines (lines containing "debug").
+Part B: The last line is a TODO. Copy it to your system clipboard
+        using Space y so you can paste it elsewhere.
+
+For commenting: select the debug lines, then Space c.
+"""
+hints = [
+  "Navigate to the first debug line. Press x to select it.",
+  "Press Space c to toggle the comment. The line becomes // debug(\"Starting process\");",
+  "Repeat for each debug line. Or use multi-selection: select all lines, use s to find \"debug\", then X to extend to full lines, then Space c.",
+  "For the clipboard part: select the TODO line with x, then Space y to copy to system clipboard.",
+]
+
+[[exercises.commands]]
+key = "Space y"
+description = "Yank to system clipboard"
+
+[[exercises.commands]]
+key = "Space Y"
+description = "Yank main selection to clipboard"
+
+[[exercises.commands]]
+key = "Space p"
+description = "Paste from system clipboard (after)"
+
+[[exercises.commands]]
+key = "Space P"
+description = "Paste from system clipboard (before)"
+
+[[exercises.commands]]
+key = "Space R"
+description = "Replace selection with clipboard"
+
+[[exercises.commands]]
+key = "Space c"
+description = "Toggle line comments"
+
+[[exercises.commands]]
+key = "Space C"
+description = "Toggle block comments"
+
+[[exercises.commands]]
+key = "Space /"
+description = "Global search in workspace"
+
+[[exercises.commands]]
+key = "Space ?"
+description = "Open command palette"
+
+[[exercises]]
+id = "10-unimpaired/01-diagnostic-navigation"
+title = "Diagnostic Navigation"
+category = "Unimpaired"
+difficulty = 3
+notes = """
+MNEMONIC: ] = next, [ = previous. Then: d=diagnostic, f=function,
+          t=type, a=argument
+"""
+instructions = """
+Match each navigation need to the correct key sequence.
+
+The ] and [ keys are your structured code navigation — think
+of them as "next/previous" for any code construct.
+"""
+hints = [
+  "] always means \"next\", [ always means \"previous\"",
+  "Lowercase letter = next/prev. Uppercase = first/last.",
+  "d=diagnostic, f=function, t=type, a=argument",
+  "Try these in a real code file to see them jump!",
+]
+
+[[exercises.commands]]
+key = "] d"
+description = "Go to next diagnostic (error/warning)"
+
+[[exercises.commands]]
+key = "[ d"
+description = "Go to previous diagnostic"
+
+[[exercises.commands]]
+key = "] D"
+description = "Go to last diagnostic in document"
+
+[[exercises.commands]]
+key = "[ D"
+description = "Go to first diagnostic in document"
+
+[[exercises.commands]]
+key = "] f"
+description = "Go to next function (tree-sitter)"
+
+[[exercises.commands]]
+key = "[ f"
+description = "Go to previous function"
+
+[[exercises.commands]]
+key = "] t"
+description = "Go to next type/class"
+
+[[exercises.commands]]
+key = "[ t"
+description = "Go to previous type/class"
+
+[[exercises.commands]]
+key = "] a"
+description = "Go to next argument/parameter"
+
+[[exercises.commands]]
+key = "[ a"
+description = "Go to previous argument"
+
+[[exercises]]
+id = "10-unimpaired/02-structure-navigation"
+title = "Structure Navigation"
+category = "Unimpaired"
+difficulty = 3
+notes = ""
+instructions = """
+Part A: Add empty lines between each section heading using
+] Space and [ Space.
+
+Part B: Fill in the remaining reference entries.
+"""
+hints = [
+  "Position cursor at the end of \"section one goes here.\" then press ] Space to insert an empty line below.",
+  "Repeat between each section.",
+  "c=change/hunk, T=test (uppercase), Space=empty line",
+]
+
+[[exercises.commands]]
+key = "] c"
+description = "Go to next git hunk (change)"
+
+[[exercises.commands]]
+key = "[ c"
+description = "Go to previous git hunk"
+
+[[exercises.commands]]
+key = "] T"
+description = "Go to next test"
+
+[[exercises.commands]]
+key = "[ T"
+description = "Go to previous test"
+
+[[exercises.commands]]
+key = "] p"
+description = "Go to next paragraph"
+
+[[exercises.commands]]
+key = "[ p"
+description = "Go to previous paragraph"
+
+[[exercises.commands]]
+key = "] g"
+description = "Go to next change"
+
+[[exercises.commands]]
+key = "[ g"
+description = "Go to previous change"
+
+[[exercises.commands]]
+key = "] G"
+description = "Go to last change"
+
+[[exercises.commands]]
+key = "[ G"
+description = "Go to first change"
+
+[[exercises.commands]]
+key = "] Space"
+description = "Insert empty line below"
+
+[[exercises.commands]]
+key = "[ Space"
+description = "Insert empty line above"
+
+[[exercises]]
+id = "10-unimpaired/03-indent-navigation"
+title = "Indent Navigation"
+category = "Unimpaired"
+difficulty = 3
+notes = ""
+instructions = """
+Indent navigation is powerful for navigating nested code
+without relying on tree-sitter.
+
+Fill in the reference card below.
+"""
+hints = [
+  "+ = greater indent, - = lesser indent, = = same indent",
+  "b = buffer, B = buffer (first/last)",
+  "These are incredibly useful in Python or YAML where indentation defines structure.",
+]
+
+[[exercises.commands]]
+key = "] +"
+description = "Go to next line with greater indent"
+
+[[exercises.commands]]
+key = "[ +"
+description = "Go to previous line with greater indent"
+
+[[exercises.commands]]
+key = "] -"
+description = "Go to next line with lesser indent"
+
+[[exercises.commands]]
+key = "[ -"
+description = "Go to previous line with lesser indent"
+
+[[exercises.commands]]
+key = "] ="
+description = "Go to next line with same indent"
+
+[[exercises.commands]]
+key = "[ ="
+description = "Go to previous line with same indent"
+
+[[exercises.commands]]
+key = "] b"
+description = "Next buffer"
+
+[[exercises.commands]]
+key = "[ b"
+description = "Previous buffer"
+
+[[exercises.commands]]
+key = "] B"
+description = "Last buffer"
+
+[[exercises.commands]]
+key = "[ B"
+description = "First buffer"
+
+[[exercises]]
+id = "11-advanced-workflows/01-rename-variable"
+title = "Rename Variable"
+category = "Advanced Workflows"
+difficulty = 3
+notes = """
+THE HELIX WAY: Select all, then act on all at once.
+
+WORKFLOW
+--------
+  The Helix pattern for global find-and-replace:
+
+  % s <pattern> Enter c <replacement> Esc
+
+  1. %           Select entire file
+  2. s           Open regex select (split into sub-selections)
+  3. <pattern>   Type the text to find
+  4. Enter       Confirm — now every match is a separate selection
+  5. c           Change all selections simultaneously
+  6. <type>      Type the replacement text
+  7. Esc         Done — all instances changed at once
+
+  This replaces Vim's  :%s/old/new/g
+"""
+instructions = """
+Rename the variable "count" to "total" everywhere in this code.
+Use the workflow above: % s count Enter c total Esc
+"""
+hints = [
+  "Select all practice text (use x repeatedly or v+motion).",
+  "Press s, type \"count\", press Enter.",
+  "You should see 5 selections highlighting each \"count\".",
+  "Press c, type \"total\", press Esc. All 5 change at once.",
+  "Note: this also changes \"count\" inside the string. For real code, use Space r (LSP rename) instead!",
+]
+
+[[exercises.commands]]
+key = "% s <pattern> Enter c <replacement> Esc"
+description = "The Helix pattern for global find-and-replace"
+
+[[exercises]]
+id = "11-advanced-workflows/02-extract-function"
+title = "Extract and Restructure"
+category = "Advanced Workflows"
+difficulty = 3
+notes = """
+WORKFLOW
+--------
+  Multi-step editing combining several Helix techniques:
+  - Text object selection (m a f for function)
+  - Yank and paste (y, p, P)
+  - Change (c) and insert (i, a, o)
+  - Line selection (x) and deletion (d)
+"""
+instructions = """
+The code below has a large function. Your task:
+1. Move the validation logic into its own function called
+   "validate" that returns a boolean
+2. Replace the original validation block with a call to validate()
+3. Keep the main function clean
+
+This requires multiple steps — there's no single command.
+Use your full Helix toolkit!
+"""
+hints = [
+  "Select the 3 validation lines (x x x), yank them (y).",
+  "Go above the function, open a new line (O), and create the validate function header.",
+  "Paste the validation lines (p), then change \"return null\" to \"return false\" using the rename workflow: select the lines, s null Enter c false Esc.",
+  "Add \"return true;\" at the end of validate.",
+  "Back in processOrder, replace the 4 validation lines with \"if (!validate(order)) return null;\"",
+]
+
+[[exercises.commands]]
+key = "m a f"
+description = "Select AROUND function (entire function including signature)"
+
+[[exercises.commands]]
+key = "y"
+description = "Yank and paste"
+
+[[exercises.commands]]
+key = "c"
+description = "Change and insert"
+
+[[exercises.commands]]
+key = "x"
+description = "Line selection"
+
+[[exercises.commands]]
+key = "d"
+description = "Deletion"
+
+[[exercises]]
+id = "11-advanced-workflows/03-reformat-data"
+title = "Reformat Data"
+category = "Advanced Workflows"
+difficulty = 3
+notes = """
+WORKFLOW
+--------
+  Data transformation using multi-selection and surround:
+  - S (split selection on regex)
+  - s (regex select within selection)
+  - m s (add surround)
+  - c (change)
+  - J (join)
+"""
+instructions = """
+Convert this CSV data into a JSON array.
+Each line should become a JSON object with keys "name" and "age".
+
+Strategy:
+1. Transform each data line from "Name,Age" to {"name": "Name", "age": Age}
+2. Work line by line, or use multi-selection for the repetitive parts
+"""
+hints = [
+  "This is a multi-step transformation. One approach: work one line at a time until you get the pattern, then try to parallelize with multi-selection.",
+  "For \"Alice,30\": select \"Alice\", surround with quotes, add the key prefix, handle the comma, etc.",
+  "Power approach: Select all 4 lines. Use s to find the comma, change it to '\", \"age\": '. Then handle the prefix {\"name\": \" and suffix } for each line.",
+  "Don't worry about elegance — any approach that gets to the expected result practices useful Helix skills!",
+]
+
+[[exercises.commands]]
+key = "S"
+description = "Split selection on regex"
+
+[[exercises.commands]]
+key = "s"
+description = "Regex select within selection"
+
+[[exercises.commands]]
+key = "m s"
+description = "Add surround"
+
+[[exercises.commands]]
+key = "c"
+description = "Change"
+
+[[exercises.commands]]
+key = "J"
+description = "Join"
+
+[[exercises]]
+id = "11-advanced-workflows/04-bulk-transform"
+title = "Bulk Transform"
+category = "Advanced Workflows"
+difficulty = 3
+notes = """
+WORKFLOW
+--------
+  Combining multi-selection with surround operations:
+  - % (select all)
+  - s (regex select)
+  - K / Alt-K (keep/remove selections)
+  - m r (replace surround)
+  - c (change)
+"""
+instructions = """
+This JavaScript code uses var everywhere. Modernize it:
+1. Change all "var" to "const" (for the ones that aren't reassigned)
+2. Change the reassigned variables' "var" to "let"
+
+The comments indicate which should be "let" vs "const".
+"""
+hints = [
+  "First pass — change ALL var to const: Select all lines, s var Enter, c const Esc.",
+  "Second pass — fix the \"let\" ones. Navigate to each line marked \"let (reassigned)\" and change \"const\" to \"let\".",
+  "For the let lines: select \"const\" on that line (w or f c), then c let Esc.",
+  "Alternative: do it in two targeted passes. First select only the const lines and change those, then the let lines.",
+]
+
+[[exercises.commands]]
+key = "%"
+description = "Select all"
+
+[[exercises.commands]]
+key = "s"
+description = "Regex select"
+
+[[exercises.commands]]
+key = "K / Alt-K"
+description = "Keep/remove selections"
+
+[[exercises.commands]]
+key = "m r"
+description = "Replace surround"
+
+[[exercises.commands]]
+key = "c"
+description = "Change"
+
+[[exercises]]
+id = "11-advanced-workflows/05-vim-to-helix"
+title = "Vim to Helix Translation"
+category = "Advanced Workflows"
+difficulty = 3
+notes = """
+THE KEY MENTAL SHIFT: Vim = action first, Helix = selection first.
+
+VIM -> HELIX TRANSLATION TABLE
+------------------------------
+  Vim    Helix    Action
+  dw     wd       Delete word
+  dd     xd       Delete line
+  yy     xy       Yank line
+  ci"    mi"c     Change inside quotes
+  ca(    ma(d     Delete around parens
+  >>     x>       Indent line
+  Vj     xx       Select two lines
+  :%s    %s       Select-all + regex select
+"""
+instructions = """
+Fill in the Helix equivalent for each Vim command.
+Then perform the actual edit described on the text below.
+"""
+hints = [
+  "The pattern is: Vim's di/ci/da -> Helix's mi/ma + action. Vim: d(action) i(inside) w(object). Helix: m(match) i(inside) w(object) d(action)",
+  "Surround operations: Vim cs\"' -> Helix mr\"' (m=match, r=replace surround)",
+  "For the practice edits: navigate to \"DELETEME\", use miwd (match inside word, delete).",
+  "For config(\"old\"): put cursor inside quotes, mi\"c then type \"new\", Esc.",
+]
+
+[[exercises.commands]]
+key = "miwd"
+description = "Delete inner word (Vim: diw)"
+
+[[exercises.commands]]
+key = "mi{c"
+description = "Change inside braces (Vim: ci{)"
+
+[[exercises.commands]]
+key = "mapd"
+description = "Delete around paragraph (Vim: dap)"
+
+[[exercises.commands]]
+key = "miwy"
+description = "Yank inner word (Vim: yiw)"
+
+[[exercises.commands]]
+key = "vmip"
+description = "Select inner paragraph (Vim: vip)"
+
+[[exercises.commands]]
+key = "masd"
+description = "Delete around sentence (Vim: das)"
+
+[[exercises.commands]]
+key = "mr\"'"
+description = "Change surround \" to ' (Vim: cs\"')"
+
+[[exercises]]
+id = "12-challenges/01-speed-edit"
+title = "Speed Edit"
+category = "Challenges"
+difficulty = 3
+notes = """
+CHALLENGE: Transform this code as fast as you can!
+----------------------------------------------
+
+No hints on this one. Use everything you've learned.
+Time yourself if you want — under 60 seconds is good,
+under 30 seconds is expert.
+
+TASKS:
+  1. Add semicolons to every line that's missing one
+  2. Change all "let" to "const"
+  3. Add "export " before each function keyword
+  4. Delete all single-line comments
+"""
+instructions = """
+Transform the practice code by:
+1. Adding semicolons to every line that's missing one
+2. Changing all "let" to "const"
+3. Adding "export " before each function keyword
+4. Deleting all single-line comments
+"""
+hints = []
+
+[[exercises]]
+id = "12-challenges/02-minimal-keystrokes"
+title = "Minimal Keystrokes"
+category = "Challenges"
+difficulty = 3
+notes = """
+CHALLENGE: Reach the expected result in the fewest keystrokes.
+---------------------------------------------------------
+
+Think before you type. The most efficient solution uses
+multi-selection and surround operations.
+
+PAR: ~15 keystrokes (expert)
+GOOD: ~25 keystrokes
+OKAY: ~40 keystrokes
+
+TASK: Wrap each word in <li> tags and add the <ul> wrapper.
+"""
+instructions = """
+Wrap each word in <li> tags and add the <ul> wrapper.
+Reach the expected result in the fewest keystrokes possible.
+"""
+hints = []
+
+[[exercises]]
+id = "12-challenges/03-real-world-refactor"
+title = "Real-World Refactor"
+category = "Challenges"
+difficulty = 3
+notes = """
+CHALLENGE: Refactor this code using Helix multi-selection.
+------------------------------------------------------
+
+This callback-heavy code needs to be converted to use
+async/await. Apply the transformation to all three functions.
+
+Use multi-selection where possible — don't repeat yourself!
+"""
+instructions = """
+Refactor this callback-heavy code to use async/await.
+Apply the transformation to all three functions.
+Use multi-selection where possible.
+"""
+hints = []
+
+[[exercises]]
+id = "12-challenges/04-code-golf"
+title = "Code Golf"
+category = "Challenges"
+difficulty = 3
+notes = """
+CHALLENGE: Creative multi-selection solutions.
+------------------------------------------
+
+Multiple tasks, each designed to have an elegant Helix solution.
+Try to find the shortest keystroke sequence for each.
+
+TASK A: Reverse the order of these lines (last becomes first).
+TASK B: Sort these numbers and remove duplicates.
+TASK C: Convert the object keys from camelCase to snake_case.
+"""
+instructions = """
+TASK A: Reverse the order of the lines (last becomes first).
+TASK B: Sort the numbers and remove duplicates.
+TASK C: Convert the object keys from camelCase to snake_case.
+
+Multiple tasks, each designed to have an elegant Helix solution.
+Try to find the shortest keystroke sequence for each.
+"""
+hints = []
