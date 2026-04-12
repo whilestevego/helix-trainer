@@ -36,10 +36,14 @@ pub struct App {
     pub exercises_dir: PathBuf,
     pub quit: bool,
     pub flash_message: Option<(String, std::time::Instant)>,
+    pub missing_exercises: usize,
 }
 
 impl App {
     pub fn new(exercises_dir: PathBuf) -> anyhow::Result<Self> {
+        let missing_exercises =
+            crate::commands::init::count_missing_exercises(&exercises_dir);
+
         let db = metadata::load_exercises();
         let mut exercises = Vec::with_capacity(db.exercises.len());
 
@@ -77,6 +81,7 @@ impl App {
             exercises_dir,
             quit: false,
             flash_message: None,
+            missing_exercises,
         })
     }
 
@@ -197,6 +202,27 @@ impl App {
             }
         }
         Ok(None)
+    }
+
+    pub fn install_missing_exercises(&mut self) -> anyhow::Result<()> {
+        if self.missing_exercises == 0 {
+            return Ok(());
+        }
+
+        let installed = crate::commands::init::install_missing(&self.exercises_dir)?;
+        self.missing_exercises = 0;
+
+        // Re-verify all exercises (new ones will now exist on disk)
+        for i in 0..self.exercises.len() {
+            self.reverify_exercise(i)?;
+        }
+
+        self.flash_message = Some((
+            format!("📦 Installed {} new exercises!", installed),
+            std::time::Instant::now(),
+        ));
+
+        Ok(())
     }
 
     pub fn completed_count(&self) -> usize {

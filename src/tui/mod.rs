@@ -58,6 +58,7 @@ pub async fn run(exercises_dir: PathBuf) -> Result<()> {
                     KeyCode::Char(' ') => app.reveal_hint(),
                     KeyCode::Char('n') => app.jump_next_incomplete(),
                     KeyCode::Char('r') => app.reset_current()?,
+                    KeyCode::Char('u') => app.install_missing_exercises()?,
                     KeyCode::Char('?') => app.show_help = !app.show_help,
                     _ => {}
                 }

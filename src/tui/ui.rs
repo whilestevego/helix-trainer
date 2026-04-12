@@ -29,7 +29,7 @@ fn render_header(frame: &mut Frame, area: Rect, app: &App) {
     let (mod_idx, mod_total) = app.current_module_index();
     let (ex_idx, ex_total) = app.current_exercise_in_module();
 
-    let header = Line::from(vec![
+    let mut header_spans = vec![
         Span::styled(
             " 🏋️ Helix Trainer",
             Style::default()
@@ -46,8 +46,17 @@ fn render_header(frame: &mut Frame, area: Rect, app: &App) {
             Style::default().fg(Color::Gray),
         ),
         Span::styled("[?] help", Style::default().fg(Color::DarkGray)),
-    ]);
+    ];
 
+    if app.missing_exercises > 0 {
+        header_spans.push(Span::raw("    "));
+        header_spans.push(Span::styled(
+            format!("📦 {} new exercises available — press [u] to install", app.missing_exercises),
+            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
+        ));
+    }
+
+    let header = Line::from(header_spans);
     frame.render_widget(Paragraph::new(vec![header, Line::raw("")]), area);
 }
 

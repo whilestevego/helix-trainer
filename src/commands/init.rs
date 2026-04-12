@@ -5,25 +5,61 @@ use anyhow::{Context, Result};
 
 use crate::exercises::EXERCISES;
 
-fn extract_dir(dir: &include_dir::Dir<'_>, dest: &Path) -> Result<usize> {
-    let mut count = 0;
+/// Extract embedded exercises to disk. If `skip_existing` is true,
+/// only writes files that don't already exist (additive update).
+/// Returns (new_count, skipped_count).
+fn extract_dir(dir: &include_dir::Dir<'_>, dest: &Path, skip_existing: bool) -> Result<(usize, usize)> {
+    let mut new_count = 0;
+    let mut skipped = 0;
 
     for file in dir.files() {
         let dest_path = dest.join(file.path());
+        if skip_existing && dest_path.exists() {
+            skipped += 1;
+            continue;
+        }
         if let Some(parent) = dest_path.parent() {
             fs::create_dir_all(parent)
                 .with_context(|| format!("creating directory {}", parent.display()))?;
         }
         fs::write(&dest_path, file.contents())
             .with_context(|| format!("writing {}", dest_path.display()))?;
-        count += 1;
+        new_count += 1;
     }
 
     for subdir in dir.dirs() {
-        count += extract_dir(subdir, dest)?;
+        let (sub_new, sub_skipped) = extract_dir(subdir, dest, skip_existing)?;
+        new_count += sub_new;
+        skipped += sub_skipped;
     }
 
-    Ok(count)
+    Ok((new_count, skipped))
+}
+
+/// Count how many embedded exercise files are missing from the target directory.
+pub fn count_missing_exercises(exercises_dir: &Path) -> usize {
+    count_missing_in_dir(&EXERCISES, exercises_dir)
+}
+
+fn count_missing_in_dir(dir: &include_dir::Dir<'_>, dest: &Path) -> usize {
+    let mut missing = 0;
+    for file in dir.files() {
+        let dest_path = dest.join(file.path());
+        if !dest_path.exists() {
+            missing += 1;
+        }
+    }
+    for subdir in dir.dirs() {
+        missing += count_missing_in_dir(subdir, dest);
+    }
+    missing
+}
+
+/// Install only the missing exercises into an existing exercises directory.
+/// Returns the number of new files written.
+pub fn install_missing(exercises_dir: &Path) -> Result<usize> {
+    let (new_count, _) = extract_dir(&EXERCISES, exercises_dir, true)?;
+    Ok(new_count)
 }
 
 pub fn run(target_arg: Option<&Path>) -> Result<()> {
@@ -38,19 +74,24 @@ pub fn run(target_arg: Option<&Path>) -> Result<()> {
 
     let exercises_dest = target.join("exercises");
 
-    // Check if target already has exercises
+    // If exercises already exist, do an additive update
     if exercises_dest.join("README.md").exists() {
-        eprintln!(
-            "! {} already contains exercises.",
-            target.display()
-        );
-        eprintln!("  Use 'helix-trainer reset' from that directory to restore them.");
-        std::process::exit(1);
+        let missing = count_missing_exercises(&exercises_dest);
+        if missing == 0 {
+            println!("\n  ✅ All exercises are already up to date.\n");
+            return Ok(());
+        }
+
+        println!("\n  Updating exercises...\n");
+        let (new_count, skipped) = extract_dir(&EXERCISES, &exercises_dest, true)?;
+        println!("  ✅ Added {} new exercise files ({} existing unchanged)\n", new_count, skipped);
+        return Ok(());
     }
 
+    // Fresh install
     println!("\n  Generating Helix training exercises...\n");
 
-    let count = extract_dir(&EXERCISES, &exercises_dest)?;
+    let (count, _) = extract_dir(&EXERCISES, &exercises_dest, false)?;
 
     // Create .gitignore
     fs::write(target.join(".gitignore"), "*.db\n.DS_Store\n")?;
