@@ -1,8 +1,8 @@
 # Helixir 🧪
 
-**A practice elixir for Helix keybindings — 65 hands-on exercises distilled into your real editor.**
+**65 Helix keybinding exercises. You do them in your real editor.**
 
-Helixir is a TUI that walks you through 65 structured exercises, watches your exercise files for changes, shows instructions and hints, and auto-advances as you complete each one. You edit in your real editor (Helix, Zed, or any editor with Helix keybindings) — no simulations, no quizzes. Just deliberate practice, one dose at a time.
+You open the TUI in one pane and your editor (Helix, Zed, or anything with a Helix mode) in another. The TUI tells you what to do. When you save a file, Helixir checks your work and moves you to the next exercise.
 
 ![Helixir in action — collapsible module tree on the left, exercise detail with commands, instructions, and hints on the right](docs/screenshot.png)
 
@@ -17,9 +17,9 @@ helixir                # Brew the TUI
 
 ## Why
 
-Reading a keybinding reference is like reading a phrasebook — you recognize words but can't speak the language. Muscle memory comes from repetition in context.
+A cheatsheet teaches you what `wd` does. It doesn't teach your fingers to reach for `wd` without thinking. That part comes from doing it a few hundred times in context.
 
-Helixir gives you that context: structured exercises that progressively distill your fluency, from basic motion (`h`/`j`/`k`/`l`) to multi-selection workflows that feel like a superpower.
+Helixir is the few hundred times. The first exercises are `hjkl`. The last ones are multi-selection workflows that, once they click, change how you edit.
 
 ## How It Works
 
@@ -29,8 +29,6 @@ Helixir gives you that context: structured exercises that progressively distill 
 4. **Edit** the PRACTICE section to match the EXPECTED section using the commands shown in the TUI
 5. **Save** — the TUI detects your changes, verifies them, and auto-advances on success
 6. **Use the TUI** to navigate exercises, reveal hints, and reset exercises
-
-The TUI shows instructions and commands. Your editor is where you brew.
 
 ## Install
 
@@ -81,11 +79,11 @@ colour spreads across the horizon.
 - **PRACTICE** — the text you edit with real Helix commands
 - **EXPECTED** — what PRACTICE should look like when you're done
 
-Everything else — title, commands to learn, instructions, and hints — lives in the TUI, not in the file. This keeps the editing surface clean and focused.
+Everything else (title, instructions, hints, commands) lives in the TUI, so the file stays out of your way while you edit.
 
 ## Curriculum
 
-65 exercises across 16 modules, organized in 5 progressive tiers.
+65 exercises in 16 modules, grouped into 5 tiers.
 
 ### Tier 1 — Apprentice
 
@@ -170,7 +168,7 @@ Helix reverses Vim's editing grammar:
 | **Delete line** | `dd` | `xd` |
 | **Yank paragraph** | `yap` | `mapy` |
 
-The core insight: **you always see what will be affected before you act**. Every motion creates a visible selection. You refine it, then commit. No more "oops, I deleted the wrong thing."
+Every motion creates a visible selection. You see exactly what the next command will affect, refine it if you need to, then commit.
 
 Multi-selection takes this further. Instead of `:%s/old/new/g`, you:
 
@@ -180,21 +178,19 @@ s old       Split into selections on "old"
 c new       Change all selections simultaneously
 ```
 
-This is the workflow you'll master in Module 06.
+Module 06 drills this until it's automatic.
 
-## Tips for Getting the Most Out of It
+## Tips
 
-**Follow the progression.** The exercises build on each other. Module 04 (text objects) assumes you know Module 03 (changes). Module 06 (multi-selection) assumes you know Module 04.
+The exercises build on each other. Module 04 assumes you know Module 03; Module 06 assumes you know Module 04. If something feels impossible, you probably skipped ahead.
 
-**One module per session.** Don't grind through all 65 in a day. Do a module, then use those commands in your real work. Come back tomorrow.
+Don't grind 65 in a day. Do a module, go use those commands in real work for a day, come back.
 
-**Use the which-key popup.** Press any prefix key (`g`, `m`, `Space`, `z`, `]`, `[`) and pause — a popup shows all available sub-commands. This is your cheat sheet.
+Press `Space` to reveal hints — but try without first. If a selection goes wrong, `;` collapses it back to a cursor; build that habit early.
 
-**`;` is your reset button.** If a selection goes wrong, press `;` to collapse it back to a cursor and try again. Build this habit early.
+When you forget a chord, pause after the prefix key (`g`, `m`, `Space`, `z`, `]`, `[`). Helix shows every option available. That popup is the cheatsheet you actually want.
 
-**Use the TUI hints.** Press `Space` to reveal hints one at a time. Try each exercise without hints first. Struggle is where learning happens.
-
-**Repeat the hard ones.** Press `r` in the TUI to reset any exercise. The challenges in Module 16 are designed for repeated practice.
+Module 16 (challenges) is built for repetition. Press `r` to reset and run them again.
 
 ## Compatibility
 
@@ -208,7 +204,7 @@ The CLI is a single static binary with no runtime dependencies. The exercises th
 
 ## Contributing
 
-Contributions are welcome! Here's how you can help:
+PRs welcome, especially new exercises and fixes to existing ones.
 
 ### Adding exercises
 
@@ -238,7 +234,7 @@ If an exercise has incorrect expected output, unclear instructions, or a keybind
 
 ## How It's Built
 
-A single-binary Rust TUI distilled with ratatui:
+A single-binary Rust TUI built on ratatui.
 
 - **`src/tui/`** — TUI app: event loop, layout, widgets, file watching
 - **`src/hxt.rs`** — Pure parser for `.hxt` files: extracts PRACTICE/EXPECTED sections, diffs them
@@ -254,8 +250,8 @@ MIT
 
 ## Acknowledgments
 
-- [Helix Editor](https://helix-editor.com) — for the selection-first editing model
-- [Zed](https://zed.dev) — for bringing Helix mode to a modern editor
-- [Kakoune](https://kakoune.org) — the original inspiration for selection-first editing
-- [ratatui](https://ratatui.rs) — for the TUI framework
-- Vim's `vimtutor` — the original "learn by editing" concept that inspired this project
+- [Helix](https://helix-editor.com) for the selection-first editing model.
+- [Kakoune](https://kakoune.org), which inspired Helix.
+- [Zed](https://zed.dev) — first GUI editor I know of with a serious Helix mode.
+- [ratatui](https://ratatui.rs) — the TUI framework.
+- Vim's `vimtutor` — the original "learn by editing" idea.
