@@ -24,6 +24,8 @@ clap = { version = "4", features = ["derive"] }
 assert_cmd = "2"
 tempfile = "3"
 predicates = "3"
+insta = "1"
+proptest = "1"
 
 [profile.release]
 opt-level = "z"

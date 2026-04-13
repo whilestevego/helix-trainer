@@ -135,6 +135,52 @@ impl App {
         })
     }
 
+    /// Test/library constructor: builds an `App` from pre-constructed
+    /// `ExerciseState` values, bypassing disk I/O. Useful for state-machine
+    /// and UI snapshot tests. The initial cursor jumps to the first non-passed
+    /// exercise (matching `App::new`), and the module containing that cursor
+    /// is expanded while all others are collapsed.
+    pub fn from_exercises(exercises: Vec<ExerciseState>, exercises_dir: PathBuf) -> Self {
+        let initial_selected = exercises
+            .iter()
+            .position(|e| e.status != ExerciseStatus::Passed)
+            .unwrap_or(0);
+
+        let initial_module = exercises
+            .get(initial_selected)
+            .map(|e| e.meta.category.clone());
+        let mut collapsed_modules: BTreeSet<String> =
+            exercises.iter().map(|e| e.meta.category.clone()).collect();
+        if let Some(m) = initial_module {
+            collapsed_modules.remove(&m);
+        }
+
+        let cursor = if exercises.is_empty() {
+            TreeCursor::Module(String::new())
+        } else {
+            TreeCursor::Exercise(initial_selected)
+        };
+
+        App {
+            exercises,
+            cursor,
+            scroll_offset: 0,
+            detail_scroll: 0,
+            detail_scroll_max: 0,
+            hint_level: 0,
+            show_help: false,
+            focused_panel: Panel::List,
+            exercises_dir,
+            quit: false,
+            flash_message: None,
+            missing_exercises: 0,
+            collapsed_modules,
+            show_cheatsheet: false,
+            cheatsheet_scroll: 0,
+            pending_chord: None,
+        }
+    }
+
     /// The module name the cursor is currently on (whether on the header or
     /// on one of its exercises).
     pub fn cursor_module(&self) -> &str {

@@ -79,4 +79,46 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_every_exercise_id_has_matching_hxt_file() {
+        let db = load_exercises();
+        for ex in &db.exercises {
+            let path = format!("{}.hxt", ex.id);
+            assert!(
+                crate::exercises::EXERCISES.get_file(&path).is_some(),
+                "exercise id '{}' has no embedded .hxt file at '{}'",
+                ex.id,
+                path
+            );
+        }
+    }
+
+    #[test]
+    fn test_no_duplicate_exercise_ids() {
+        let db = load_exercises();
+        let mut seen = std::collections::HashSet::new();
+        for ex in &db.exercises {
+            assert!(seen.insert(&ex.id), "duplicate exercise id: {}", ex.id);
+        }
+    }
+
+    #[test]
+    fn test_categories_are_contiguous() {
+        // Exercises sharing a category must appear consecutively in the
+        // TOML. Violations would make the grouped UI misrender.
+        let db = load_exercises();
+        let mut seen = std::collections::HashSet::new();
+        let mut current: Option<&str> = None;
+        for ex in &db.exercises {
+            if current != Some(ex.category.as_str()) {
+                assert!(
+                    seen.insert(ex.category.clone()),
+                    "category '{}' reappears after another category; must be contiguous",
+                    ex.category
+                );
+                current = Some(ex.category.as_str());
+            }
+        }
+    }
 }
