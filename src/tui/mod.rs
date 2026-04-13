@@ -43,11 +43,51 @@ pub async fn run(exercises_dir: PathBuf) -> Result<()> {
                     continue;
                 }
 
+                if app.show_cheatsheet {
+                    match key.code {
+                        KeyCode::Char('c') | KeyCode::Esc => {
+                            app.show_cheatsheet = false;
+                            app.cheatsheet_scroll = 0;
+                        }
+                        KeyCode::Char('j') | KeyCode::Down => {
+                            app.cheatsheet_scroll = app.cheatsheet_scroll.saturating_add(3);
+                        }
+                        KeyCode::Char('k') | KeyCode::Up => {
+                            app.cheatsheet_scroll = app.cheatsheet_scroll.saturating_sub(3);
+                        }
+                        _ => {}
+                    }
+                    continue;
+                }
+
+                // Handle pending z-prefix chord
+                if let Some('z') = app.pending_chord {
+                    app.pending_chord = None;
+                    match key.code {
+                        KeyCode::Char('c') => app.collapse_current_module(),
+                        KeyCode::Char('o') => app.expand_current_module(),
+                        KeyCode::Char('a') => app.toggle_current_module(),
+                        KeyCode::Char('M') => app.collapse_all_modules(),
+                        KeyCode::Char('R') => app.expand_all_modules(),
+                        _ => {}
+                    }
+                    continue;
+                }
+
                 match key.code {
                     KeyCode::Char('q') => app.quit = true,
                     KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                         app.quit = true;
                     }
+                    // Cheat sheet overlay
+                    KeyCode::Char('c') => {
+                        app.show_cheatsheet = true;
+                        app.cheatsheet_scroll = 0;
+                    }
+                    // Z-prefix chord (collapse/open/all)
+                    KeyCode::Char('z') => app.pending_chord = Some('z'),
+                    // Tab toggles current module's collapsed state
+                    KeyCode::Tab => app.toggle_current_module(),
                     // Panel focus
                     KeyCode::Char('h') | KeyCode::Left => app.focus_left(),
                     KeyCode::Char('l') | KeyCode::Right => app.focus_right(),

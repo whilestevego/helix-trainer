@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -24,6 +25,18 @@ pub enum Panel {
     Detail,
 }
 
+pub struct CheatsheetCommand {
+    pub key: String,
+    pub description: String,
+}
+
+pub struct CheatsheetModule {
+    pub name: String,
+    pub passed: usize,
+    pub total: usize,
+    pub commands: Vec<CheatsheetCommand>,
+}
+
 pub struct App {
     pub exercises: Vec<ExerciseState>,
     pub selected: usize,
@@ -37,6 +50,14 @@ pub struct App {
     pub quit: bool,
     pub flash_message: Option<(String, std::time::Instant)>,
     pub missing_exercises: usize,
+    /// Module names (categories) that are currently collapsed in the tree.
+    pub collapsed_modules: BTreeSet<String>,
+    /// Cheat-sheet overlay visibility.
+    pub show_cheatsheet: bool,
+    /// Vertical scroll offset within the cheat-sheet overlay.
+    pub cheatsheet_scroll: usize,
+    /// Pending z-prefix chord (for zc/zo/za/zM/zR).
+    pub pending_chord: Option<char>,
 }
 
 impl App {
@@ -69,9 +90,29 @@ impl App {
             });
         }
 
+        // Initial cursor: jump to the first non-Passed exercise so users
+        // resume where they left off.
+        let initial_selected = exercises
+            .iter()
+            .position(|e| e.status != ExerciseStatus::Passed)
+            .unwrap_or(0);
+
+        // Default-collapse every module *except* the one containing the
+        // initial selection — keeps the panel scannable from launch.
+        let initial_module = exercises
+            .get(initial_selected)
+            .map(|e| e.meta.category.clone());
+        let mut collapsed_modules: BTreeSet<String> = exercises
+            .iter()
+            .map(|e| e.meta.category.clone())
+            .collect();
+        if let Some(m) = initial_module {
+            collapsed_modules.remove(&m);
+        }
+
         Ok(App {
             exercises,
-            selected: 0,
+            selected: initial_selected,
             scroll_offset: 0,
             detail_scroll: 0,
             detail_scroll_max: 0,
@@ -82,7 +123,107 @@ impl App {
             quit: false,
             flash_message: None,
             missing_exercises,
+            collapsed_modules,
+            show_cheatsheet: false,
+            cheatsheet_scroll: 0,
+            pending_chord: None,
         })
+    }
+
+    pub fn current_module(&self) -> &str {
+        &self.selected_exercise().meta.category
+    }
+
+    pub fn is_module_collapsed(&self, module: &str) -> bool {
+        self.collapsed_modules.contains(module)
+    }
+
+    /// Toggle the collapsed state of the currently selected exercise's module.
+    pub fn toggle_current_module(&mut self) {
+        let module = self.current_module().to_string();
+        if self.collapsed_modules.contains(&module) {
+            self.collapsed_modules.remove(&module);
+        } else {
+            self.collapsed_modules.insert(module);
+        }
+    }
+
+    pub fn collapse_current_module(&mut self) {
+        let module = self.current_module().to_string();
+        self.collapsed_modules.insert(module);
+    }
+
+    pub fn expand_current_module(&mut self) {
+        let module = self.current_module().to_string();
+        self.collapsed_modules.remove(&module);
+    }
+
+    pub fn collapse_all_modules(&mut self) {
+        self.collapsed_modules = self
+            .exercises
+            .iter()
+            .map(|e| e.meta.category.clone())
+            .collect();
+    }
+
+    pub fn expand_all_modules(&mut self) {
+        self.collapsed_modules.clear();
+    }
+
+    /// Build the cheat-sheet view: a list of (module, passed, total, commands)
+    /// where commands are deduped by key, drawn only from passed exercises,
+    /// and modules appear in the order they first show up in the exercise list.
+    pub fn build_cheatsheet(&self) -> Vec<CheatsheetModule> {
+        let mut modules: Vec<CheatsheetModule> = Vec::new();
+        let mut module_idx: std::collections::HashMap<String, usize> =
+            std::collections::HashMap::new();
+
+        // First pass: register every module in display order with totals.
+        for ex in &self.exercises {
+            if !module_idx.contains_key(&ex.meta.category) {
+                module_idx.insert(ex.meta.category.clone(), modules.len());
+                let (passed, total) = self.module_progress(&ex.meta.category);
+                modules.push(CheatsheetModule {
+                    name: ex.meta.category.clone(),
+                    passed,
+                    total,
+                    commands: Vec::new(),
+                });
+            }
+        }
+
+        // Second pass: collect commands from passed exercises only, dedupe by key.
+        for ex in &self.exercises {
+            if ex.status != ExerciseStatus::Passed {
+                continue;
+            }
+            let idx = module_idx[&ex.meta.category];
+            for cmd in &ex.meta.commands {
+                if !modules[idx].commands.iter().any(|c| c.key == cmd.key) {
+                    modules[idx].commands.push(CheatsheetCommand {
+                        key: cmd.key.clone(),
+                        description: cmd.description.clone(),
+                    });
+                }
+            }
+        }
+
+        modules
+    }
+
+    /// (passed, total) for a given module name.
+    pub fn module_progress(&self, module: &str) -> (usize, usize) {
+        let mut passed = 0;
+        let mut total = 0;
+        for ex in &self.exercises {
+            if ex.meta.category == module {
+                total += 1;
+                if ex.status == ExerciseStatus::Passed {
+                    passed += 1;
+                }
+            }
+        }
+        (passed, total)
     }
 
     pub fn selected_exercise(&self) -> &ExerciseState {
@@ -118,6 +259,7 @@ impl App {
             self.selected += 1;
             self.hint_level = 0;
             self.detail_scroll = 0;
+            self.expand_current_module();
         }
     }
 
@@ -126,6 +268,7 @@ impl App {
             self.selected -= 1;
             self.hint_level = 0;
             self.detail_scroll = 0;
+            self.expand_current_module();
         }
     }
 
@@ -136,6 +279,7 @@ impl App {
                 self.selected = idx;
                 self.hint_level = 0;
                 self.detail_scroll = 0;
+                self.expand_current_module();
                 return;
             }
         }

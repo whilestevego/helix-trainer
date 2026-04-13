@@ -20,6 +20,10 @@ pub fn render(frame: &mut Frame, app: &mut App) {
     render_main(frame, chunks[1], app);
     render_footer(frame, chunks[2], app);
 
+    if app.show_cheatsheet {
+        render_cheatsheet_popup(frame, app);
+    }
+
     if app.show_help {
         render_help_popup(frame, app);
     }
@@ -70,34 +74,53 @@ fn render_main(frame: &mut Frame, area: Rect, app: &mut App) {
     render_exercise_detail(frame, chunks[1], app);
 }
 
-/// Build the flat list of display items, tracking which row index corresponds
-/// to each exercise index (needed for scroll calculations).
+/// Build the flat list of display items for the tree view, tracking which row
+/// index corresponds to each exercise index (None when the exercise is hidden
+/// inside a collapsed module — needed for scroll calculations).
 struct ListLayout {
     items: Vec<ListItem<'static>>,
-    /// Maps exercise index → row index in items vec
-    exercise_row: Vec<usize>,
+    /// Maps exercise index → row index in items vec, or None if collapsed
+    exercise_row: Vec<Option<usize>>,
 }
 
 fn build_exercise_list(app: &App, width: u16) -> ListLayout {
     let mut items: Vec<ListItem<'static>> = Vec::new();
-    let mut exercise_row: Vec<usize> = Vec::new();
+    let mut exercise_row: Vec<Option<usize>> = vec![None; app.exercises.len()];
     let mut current_category = String::new();
     let content_width = width.saturating_sub(4) as usize; // padding + border
 
     for (i, exercise) in app.exercises.iter().enumerate() {
-        // Category header with blank line above (except first)
+        // Module header with blank line above (except first)
         if exercise.meta.category != current_category {
             if !current_category.is_empty() {
                 items.push(ListItem::new(Line::raw("")));
             }
             current_category = exercise.meta.category.clone();
-            items.push(ListItem::new(Line::from(Span::styled(
-                format!(" 🗂 {}", current_category),
-                Style::default()
-                    .fg(Color::Yellow)
-                    .add_modifier(Modifier::BOLD),
-            ))));
-            items.push(ListItem::new(Line::raw(""))); // space after header
+            let collapsed = app.is_module_collapsed(&current_category);
+            let chevron = if collapsed { "▶" } else { "▼" };
+            let (passed, total) = app.module_progress(&current_category);
+            let badge = if passed == total {
+                format!("({}/{} ✅)", passed, total)
+            } else {
+                format!("({}/{})", passed, total)
+            };
+            items.push(ListItem::new(Line::from(vec![
+                Span::styled(
+                    format!(" {} 🗂 {} ", chevron, current_category),
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(badge, Style::default().fg(Color::DarkGray)),
+            ])));
+            if !collapsed {
+                items.push(ListItem::new(Line::raw(""))); // space after header
+            }
+        }
+
+        // Skip exercise rows for collapsed modules
+        if app.is_module_collapsed(&exercise.meta.category) {
+            continue;
         }
 
         let is_selected = i == app.selected;
@@ -119,7 +142,7 @@ fn build_exercise_list(app: &App, width: u16) -> ListLayout {
         };
 
         let title = &exercise.meta.title;
-        let label = format!("  {} {}", icon, title);
+        let label = format!("    {} {}", icon, title);
         // Truncate or pad to fill the row (for background highlight)
         let display: String = if is_selected {
             if label.chars().count() < content_width {
@@ -131,7 +154,7 @@ fn build_exercise_list(app: &App, width: u16) -> ListLayout {
             label
         };
 
-        exercise_row.push(items.len());
+        exercise_row[i] = Some(items.len());
         items.push(ListItem::new(Line::from(Span::styled(display, style))));
     }
 
@@ -148,7 +171,7 @@ fn render_exercise_list(frame: &mut Frame, area: Rect, app: &App) {
     let selected_row = layout
         .exercise_row
         .get(app.selected)
-        .copied()
+        .and_then(|r| *r)
         .unwrap_or(0);
 
     // Calculate scroll offset to keep selected item visible with context
@@ -571,6 +594,26 @@ fn render_help_popup(frame: &mut Frame, _app: &App) {
         ]),
         Line::raw(""),
         Line::from(vec![
+            Span::styled("    Tab       ", Style::default().fg(Color::Green)),
+            Span::raw("Collapse / expand current module"),
+        ]),
+        Line::raw(""),
+        Line::from(vec![
+            Span::styled("    zc/zo/za  ", Style::default().fg(Color::Green)),
+            Span::raw("Collapse / open / toggle module"),
+        ]),
+        Line::raw(""),
+        Line::from(vec![
+            Span::styled("    zM / zR   ", Style::default().fg(Color::Green)),
+            Span::raw("Collapse all / expand all modules"),
+        ]),
+        Line::raw(""),
+        Line::from(vec![
+            Span::styled("    c         ", Style::default().fg(Color::Green)),
+            Span::raw("Cheat sheet (commands you've learned)"),
+        ]),
+        Line::raw(""),
+        Line::from(vec![
             Span::styled("    ?         ", Style::default().fg(Color::Green)),
             Span::raw("Toggle this help"),
         ]),
@@ -601,6 +644,88 @@ fn render_help_popup(frame: &mut Frame, _app: &App) {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(Color::Cyan))
             .title(" Help "),
+    );
+
+    frame.render_widget(ratatui::widgets::Clear, area);
+    frame.render_widget(popup, area);
+}
+
+fn render_cheatsheet_popup(frame: &mut Frame, app: &mut App) {
+    let area = centered_rect(70, 80, frame.area());
+    let modules = app.build_cheatsheet();
+    let any_passed = modules.iter().any(|m| m.passed > 0);
+
+    let mut lines: Vec<Line> = Vec::new();
+    lines.push(Line::raw(""));
+    lines.push(Line::from(Span::styled(
+        "  🗝️  Cheat Sheet — Commands you've learned",
+        Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+    )));
+    lines.push(Line::raw(""));
+
+    if !any_passed {
+        lines.push(Line::raw(""));
+        lines.push(Line::from(Span::styled(
+            "    Complete your first exercise to start building your cheat sheet 💪",
+            Style::default().fg(Color::DarkGray),
+        )));
+    } else {
+        for module in &modules {
+            if module.commands.is_empty() {
+                continue;
+            }
+            let badge = if module.passed == module.total {
+                format!("({}/{} ✅)", module.passed, module.total)
+            } else {
+                format!("({}/{})", module.passed, module.total)
+            };
+            lines.push(Line::from(vec![
+                Span::styled(
+                    format!("  🗂 {}  ", module.name),
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(badge, Style::default().fg(Color::DarkGray)),
+            ]));
+            lines.push(Line::raw(""));
+            for cmd in &module.commands {
+                lines.push(Line::from(vec![
+                    Span::styled(
+                        format!("     {:10}", cmd.key),
+                        Style::default()
+                            .fg(Color::Green)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                    Span::styled(cmd.description.clone(), Style::default().fg(Color::White)),
+                ]));
+            }
+            lines.push(Line::raw(""));
+        }
+    }
+
+    lines.push(Line::raw(""));
+    lines.push(Line::from(Span::styled(
+        "    j/k to scroll · c or Esc to close",
+        Style::default().fg(Color::DarkGray),
+    )));
+
+    let total_lines = lines.len();
+    let visible_height = area.height.saturating_sub(2) as usize;
+    let max_scroll = total_lines.saturating_sub(visible_height);
+    app.cheatsheet_scroll = app.cheatsheet_scroll.min(max_scroll);
+    let scroll_offset = app.cheatsheet_scroll;
+    let visible_lines: Vec<Line> = lines
+        .into_iter()
+        .skip(scroll_offset)
+        .take(visible_height)
+        .collect();
+
+    let popup = Paragraph::new(visible_lines).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(Color::Cyan))
+            .title(" 🗝️  Cheat Sheet "),
     );
 
     frame.render_widget(ratatui::widgets::Clear, area);
