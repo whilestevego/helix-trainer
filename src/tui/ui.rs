@@ -4,7 +4,7 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState};
 use ratatui::Frame;
 
-use crate::tui::app::{App, ExerciseStatus, Panel};
+use crate::tui::app::{App, ExerciseStatus, Panel, TreeCursor};
 
 pub fn render(frame: &mut Frame, app: &mut App) {
     let chunks = Layout::default()
@@ -31,7 +31,20 @@ pub fn render(frame: &mut Frame, app: &mut App) {
 
 fn render_header(frame: &mut Frame, area: Rect, app: &App) {
     let (mod_idx, mod_total) = app.current_module_index();
-    let (ex_idx, ex_total) = app.current_exercise_in_module();
+
+    let exercise_span = match app.current_exercise_in_module() {
+        Some((ex_idx, ex_total)) => Span::styled(
+            format!("📝 Exercise {}/{}   ", ex_idx, ex_total),
+            Style::default().fg(Color::Gray),
+        ),
+        None => {
+            let (passed, total) = app.module_progress(app.cursor_module());
+            Span::styled(
+                format!("🗂  Module Overview ({}/{})   ", passed, total),
+                Style::default().fg(Color::Gray),
+            )
+        }
+    };
 
     let mut header_spans = vec![
         Span::styled(
@@ -45,10 +58,7 @@ fn render_header(frame: &mut Frame, area: Rect, app: &App) {
             format!("📦 Module {}/{}   ", mod_idx, mod_total),
             Style::default().fg(Color::Gray),
         ),
-        Span::styled(
-            format!("📝 Exercise {}/{}   ", ex_idx, ex_total),
-            Style::default().fg(Color::Gray),
-        ),
+        exercise_span,
         Span::styled("[?] help", Style::default().fg(Color::DarkGray)),
     ];
 
@@ -74,20 +84,25 @@ fn render_main(frame: &mut Frame, area: Rect, app: &mut App) {
     render_exercise_detail(frame, chunks[1], app);
 }
 
-/// Build the flat list of display items for the tree view, tracking which row
-/// index corresponds to each exercise index (None when the exercise is hidden
-/// inside a collapsed module — needed for scroll calculations).
+/// Build the flat list of display items for the tree view. Tracks the row
+/// index of the currently focused tree node so the list can be scrolled to
+/// keep the cursor visible.
 struct ListLayout {
     items: Vec<ListItem<'static>>,
-    /// Maps exercise index → row index in items vec, or None if collapsed
-    exercise_row: Vec<Option<usize>>,
+    /// Row index of the cursor inside `items`, if it's currently rendered.
+    cursor_row: Option<usize>,
 }
 
 fn build_exercise_list(app: &App, width: u16) -> ListLayout {
     let mut items: Vec<ListItem<'static>> = Vec::new();
-    let mut exercise_row: Vec<Option<usize>> = vec![None; app.exercises.len()];
+    let mut cursor_row: Option<usize> = None;
     let mut current_category = String::new();
     let content_width = width.saturating_sub(4) as usize; // padding + border
+
+    let selected_style = Style::default()
+        .fg(Color::Cyan)
+        .bg(Color::DarkGray)
+        .add_modifier(Modifier::BOLD);
 
     for (i, exercise) in app.exercises.iter().enumerate() {
         // Module header with blank line above (except first)
@@ -104,15 +119,31 @@ fn build_exercise_list(app: &App, width: u16) -> ListLayout {
             } else {
                 format!("({}/{})", passed, total)
             };
-            items.push(ListItem::new(Line::from(vec![
-                Span::styled(
-                    format!(" {} 🗂 {} ", chevron, current_category),
-                    Style::default()
-                        .fg(Color::Yellow)
-                        .add_modifier(Modifier::BOLD),
-                ),
-                Span::styled(badge, Style::default().fg(Color::DarkGray)),
-            ])));
+            let header_text = format!(" {} 🗂 {} {}", chevron, current_category, badge);
+            let cursor_on_header = matches!(
+                &app.cursor,
+                TreeCursor::Module(m) if m == &current_category
+            );
+            let header_line = if cursor_on_header {
+                let padded = if header_text.chars().count() < content_width {
+                    format!("{:width$}", header_text, width = content_width)
+                } else {
+                    header_text.chars().take(content_width).collect()
+                };
+                cursor_row = Some(items.len());
+                Line::from(Span::styled(padded, selected_style))
+            } else {
+                Line::from(vec![
+                    Span::styled(
+                        format!(" {} 🗂 {} ", chevron, current_category),
+                        Style::default()
+                            .fg(Color::Yellow)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                    Span::styled(badge, Style::default().fg(Color::DarkGray)),
+                ])
+            };
+            items.push(ListItem::new(header_line));
             if !collapsed {
                 items.push(ListItem::new(Line::raw(""))); // space after header
             }
@@ -123,16 +154,10 @@ fn build_exercise_list(app: &App, width: u16) -> ListLayout {
             continue;
         }
 
-        let is_selected = i == app.selected;
+        let is_selected = matches!(&app.cursor, TreeCursor::Exercise(idx) if *idx == i);
 
         let (icon, style) = if is_selected {
-            (
-                "▶",
-                Style::default()
-                    .fg(Color::Cyan)
-                    .bg(Color::DarkGray)
-                    .add_modifier(Modifier::BOLD),
-            )
+            ("▶", selected_style)
         } else {
             match exercise.status {
                 ExerciseStatus::Passed => ("✅", Style::default().fg(Color::Green)),
@@ -154,25 +179,20 @@ fn build_exercise_list(app: &App, width: u16) -> ListLayout {
             label
         };
 
-        exercise_row[i] = Some(items.len());
+        if is_selected {
+            cursor_row = Some(items.len());
+        }
         items.push(ListItem::new(Line::from(Span::styled(display, style))));
     }
 
-    ListLayout {
-        items,
-        exercise_row,
-    }
+    ListLayout { items, cursor_row }
 }
 
 fn render_exercise_list(frame: &mut Frame, area: Rect, app: &App) {
     let layout = build_exercise_list(app, area.width);
 
     let visible_height = area.height.saturating_sub(2) as usize; // block borders
-    let selected_row = layout
-        .exercise_row
-        .get(app.selected)
-        .and_then(|r| *r)
-        .unwrap_or(0);
+    let selected_row = layout.cursor_row.unwrap_or(0);
 
     // Calculate scroll offset to keep selected item visible with context
     let scroll_offset = if selected_row >= app.scroll_offset + visible_height {
@@ -227,7 +247,143 @@ fn render_exercise_list(frame: &mut Frame, area: Rect, app: &App) {
 }
 
 fn render_exercise_detail(frame: &mut Frame, area: Rect, app: &mut App) {
-    let exercise = app.selected_exercise();
+    let (lines, title) = match &app.cursor {
+        TreeCursor::Module(name) => {
+            (build_module_summary_lines(app, &name.clone()), " Module Summary ")
+        }
+        TreeCursor::Exercise(_) => (build_exercise_detail_lines(app), " Exercise Detail "),
+    };
+
+    render_detail_pane(frame, area, app, lines, title);
+}
+
+fn build_module_summary_lines(app: &App, module: &str) -> Vec<Line<'static>> {
+    let mut lines: Vec<Line<'static>> = Vec::new();
+    let (passed, total) = app.module_progress(module);
+    let bar_width = 24usize;
+    let filled = if total > 0 {
+        (passed as f64 / total as f64 * bar_width as f64).round() as usize
+    } else {
+        0
+    };
+    let bar = format!(
+        "{}{}",
+        "█".repeat(filled),
+        "░".repeat(bar_width.saturating_sub(filled))
+    );
+
+    lines.push(Line::raw(""));
+    lines.push(Line::from(Span::styled(
+        format!("  🗂  {}", module),
+        Style::default()
+            .fg(Color::Cyan)
+            .add_modifier(Modifier::BOLD),
+    )));
+    lines.push(Line::raw(""));
+    lines.push(Line::from(vec![
+        Span::raw("  "),
+        Span::styled(bar, Style::default().fg(Color::Green)),
+        Span::styled(
+            format!("  {}/{}", passed, total),
+            Style::default().fg(Color::White),
+        ),
+        Span::styled(
+            if passed == total { "  ✅" } else { "" },
+            Style::default().fg(Color::Green),
+        ),
+    ]));
+    lines.push(Line::raw(""));
+
+    // Exercises in this module
+    lines.push(Line::from(Span::styled(
+        "  📝 EXERCISES",
+        Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::BOLD),
+    )));
+    lines.push(Line::raw(""));
+    for idx in app.exercises_in_module(module) {
+        let ex = &app.exercises[idx];
+        let icon = match ex.status {
+            ExerciseStatus::Passed => "✅",
+            ExerciseStatus::Failed => "🟡",
+            ExerciseStatus::NotStarted => "⬜",
+        };
+        let stars = match ex.meta.difficulty {
+            1 => "⭐",
+            2 => "⭐⭐",
+            _ => "⭐⭐⭐",
+        };
+        lines.push(Line::from(vec![
+            Span::styled(
+                format!("     {} ", icon),
+                Style::default().fg(Color::White),
+            ),
+            Span::styled(
+                ex.meta.title.clone(),
+                Style::default().fg(Color::White),
+            ),
+            Span::styled(
+                format!("   {}", stars),
+                Style::default().fg(Color::DarkGray),
+            ),
+        ]));
+    }
+    lines.push(Line::raw(""));
+
+    // Commands learned so far in this module (deduped, from passed exercises)
+    let mut learned: Vec<(String, String)> = Vec::new();
+    for idx in app.exercises_in_module(module) {
+        let ex = &app.exercises[idx];
+        if ex.status != ExerciseStatus::Passed {
+            continue;
+        }
+        for cmd in &ex.meta.commands {
+            if !learned.iter().any(|(k, _)| k == &cmd.key) {
+                learned.push((cmd.key.clone(), cmd.description.clone()));
+            }
+        }
+    }
+
+    lines.push(Line::raw(""));
+    lines.push(Line::from(Span::styled(
+        format!("  ⌨️  COMMANDS LEARNED ({})", learned.len()),
+        Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::BOLD),
+    )));
+    lines.push(Line::raw(""));
+    if learned.is_empty() {
+        lines.push(Line::from(Span::styled(
+            "     Pass an exercise in this module to start learning commands.",
+            Style::default().fg(Color::DarkGray),
+        )));
+    } else {
+        for (key, desc) in learned {
+            lines.push(Line::from(vec![
+                Span::styled(
+                    format!("     {:10}", key),
+                    Style::default()
+                        .fg(Color::Green)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(desc, Style::default().fg(Color::White)),
+            ]));
+        }
+    }
+    lines.push(Line::raw(""));
+
+    lines.push(Line::raw(""));
+    lines.push(Line::from(Span::styled(
+        "  Press j/Tab on an exercise to focus it · Tab on this header to collapse",
+        Style::default().fg(Color::DarkGray),
+    )));
+
+    lines
+}
+
+fn build_exercise_detail_lines(app: &App) -> Vec<Line<'static>> {
+    let exercise = app.current_exercise().expect("cursor is on exercise");
     let meta = exercise.meta;
 
     let difficulty_stars = match meta.difficulty {
@@ -236,7 +392,7 @@ fn render_exercise_detail(frame: &mut Frame, area: Rect, app: &mut App) {
         _ => "⭐⭐⭐",
     };
 
-    let mut lines: Vec<Line> = Vec::new();
+    let mut lines: Vec<Line<'static>> = Vec::new();
 
     // Title with extra top padding
     lines.push(Line::raw(""));
@@ -269,7 +425,7 @@ fn render_exercise_detail(frame: &mut Frame, area: Rect, app: &mut App) {
                         .fg(Color::Green)
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled(&cmd.description, Style::default().fg(Color::White)),
+                Span::styled(cmd.description.clone(), Style::default().fg(Color::White)),
             ]));
         }
         lines.push(Line::raw(""));
@@ -396,6 +552,16 @@ fn render_exercise_detail(frame: &mut Frame, area: Rect, app: &mut App) {
         }
     }
 
+    lines
+}
+
+fn render_detail_pane(
+    frame: &mut Frame,
+    area: Rect,
+    app: &mut App,
+    lines: Vec<Line<'static>>,
+    title: &str,
+) {
     // Pre-wrap long lines to fit the panel width
     let content_width = area.width.saturating_sub(4) as usize; // borders + padding
     let mut wrapped_lines: Vec<Line> = Vec::new();
@@ -464,7 +630,7 @@ fn render_exercise_detail(frame: &mut Frame, area: Rect, app: &mut App) {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color))
             .title(Span::styled(
-                " Exercise Detail ",
+                title.to_string(),
                 Style::default().fg(Color::Cyan),
             ))
             .title_bottom(Span::styled(
@@ -650,86 +816,119 @@ fn render_help_popup(frame: &mut Frame, _app: &App) {
     frame.render_widget(popup, area);
 }
 
+fn build_cheatsheet_module_section(module: &crate::tui::app::CheatsheetModule) -> Vec<Line<'static>> {
+    let mut lines: Vec<Line<'static>> = Vec::new();
+    let badge = if module.passed == module.total {
+        format!("({}/{} ✅)", module.passed, module.total)
+    } else {
+        format!("({}/{})", module.passed, module.total)
+    };
+    lines.push(Line::from(vec![
+        Span::styled(
+            format!("  🗂 {}  ", module.name),
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::styled(badge, Style::default().fg(Color::DarkGray)),
+    ]));
+    lines.push(Line::raw(""));
+    for cmd in &module.commands {
+        lines.push(Line::from(vec![
+            Span::styled(
+                format!("     {:10}", cmd.key),
+                Style::default()
+                    .fg(Color::Green)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(cmd.description.clone(), Style::default().fg(Color::White)),
+        ]));
+    }
+    lines.push(Line::raw(""));
+    lines
+}
+
+/// Greedily distribute module sections into two columns by line count so the
+/// columns end up roughly balanced in height.
+fn distribute_into_columns(
+    sections: Vec<Vec<Line<'static>>>,
+) -> (Vec<Line<'static>>, Vec<Line<'static>>) {
+    let mut left: Vec<Line<'static>> = Vec::new();
+    let mut right: Vec<Line<'static>> = Vec::new();
+    for section in sections {
+        if left.len() <= right.len() {
+            left.extend(section);
+        } else {
+            right.extend(section);
+        }
+    }
+    (left, right)
+}
+
 fn render_cheatsheet_popup(frame: &mut Frame, app: &mut App) {
-    let area = centered_rect(70, 80, frame.area());
+    let area = centered_rect(85, 85, frame.area());
     let modules = app.build_cheatsheet();
     let any_passed = modules.iter().any(|m| m.passed > 0);
 
-    let mut lines: Vec<Line> = Vec::new();
-    lines.push(Line::raw(""));
-    lines.push(Line::from(Span::styled(
-        "  🗝️  Cheat Sheet — Commands you've learned",
-        Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
-    )));
-    lines.push(Line::raw(""));
+    // Outer frame
+    frame.render_widget(ratatui::widgets::Clear, area);
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::Cyan))
+        .title(Span::styled(
+            " 🗝️  Cheat Sheet — Commands you've learned ",
+            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+        ))
+        .title_bottom(Span::styled(
+            " j/k to scroll · c or Esc to close ",
+            Style::default().fg(Color::DarkGray),
+        ));
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
 
     if !any_passed {
-        lines.push(Line::raw(""));
-        lines.push(Line::from(Span::styled(
-            "    Complete your first exercise to start building your cheat sheet 💪",
-            Style::default().fg(Color::DarkGray),
-        )));
-    } else {
-        for module in &modules {
-            if module.commands.is_empty() {
-                continue;
-            }
-            let badge = if module.passed == module.total {
-                format!("({}/{} ✅)", module.passed, module.total)
-            } else {
-                format!("({}/{})", module.passed, module.total)
-            };
-            lines.push(Line::from(vec![
-                Span::styled(
-                    format!("  🗂 {}  ", module.name),
-                    Style::default()
-                        .fg(Color::Yellow)
-                        .add_modifier(Modifier::BOLD),
-                ),
-                Span::styled(badge, Style::default().fg(Color::DarkGray)),
-            ]));
-            lines.push(Line::raw(""));
-            for cmd in &module.commands {
-                lines.push(Line::from(vec![
-                    Span::styled(
-                        format!("     {:10}", cmd.key),
-                        Style::default()
-                            .fg(Color::Green)
-                            .add_modifier(Modifier::BOLD),
-                    ),
-                    Span::styled(cmd.description.clone(), Style::default().fg(Color::White)),
-                ]));
-            }
-            lines.push(Line::raw(""));
-        }
+        let msg = Paragraph::new(vec![
+            Line::raw(""),
+            Line::raw(""),
+            Line::from(Span::styled(
+                "  Complete your first exercise to start building your cheat sheet 💪",
+                Style::default().fg(Color::DarkGray),
+            )),
+        ]);
+        frame.render_widget(msg, inner);
+        return;
     }
 
-    lines.push(Line::raw(""));
-    lines.push(Line::from(Span::styled(
-        "    j/k to scroll · c or Esc to close",
-        Style::default().fg(Color::DarkGray),
-    )));
-
-    let total_lines = lines.len();
-    let visible_height = area.height.saturating_sub(2) as usize;
-    let max_scroll = total_lines.saturating_sub(visible_height);
-    app.cheatsheet_scroll = app.cheatsheet_scroll.min(max_scroll);
-    let scroll_offset = app.cheatsheet_scroll;
-    let visible_lines: Vec<Line> = lines
-        .into_iter()
-        .skip(scroll_offset)
-        .take(visible_height)
+    // Build per-module sections and distribute across two columns.
+    let sections: Vec<Vec<Line<'static>>> = modules
+        .iter()
+        .filter(|m| !m.commands.is_empty())
+        .map(build_cheatsheet_module_section)
         .collect();
+    let (left_lines, right_lines) = distribute_into_columns(sections);
 
-    let popup = Paragraph::new(visible_lines).block(
-        Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan))
-            .title(" 🗝️  Cheat Sheet "),
-    );
+    // Shared scroll: clamp by the taller column.
+    let visible_height = inner.height as usize;
+    let max_lines = left_lines.len().max(right_lines.len());
+    let max_scroll = max_lines.saturating_sub(visible_height);
+    app.cheatsheet_scroll = app.cheatsheet_scroll.min(max_scroll);
+    let scroll = app.cheatsheet_scroll;
 
-    frame.render_widget(ratatui::widgets::Clear, area);
-    frame.render_widget(popup, area);
+    let take_window = |lines: Vec<Line<'static>>| -> Vec<Line<'static>> {
+        lines.into_iter().skip(scroll).take(visible_height).collect()
+    };
+
+    let cols = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage(50),
+            Constraint::Length(1), // gutter
+            Constraint::Percentage(50),
+        ])
+        .split(inner);
+
+    frame.render_widget(Paragraph::new(take_window(left_lines)), cols[0]);
+    frame.render_widget(Paragraph::new(take_window(right_lines)), cols[2]);
 }
 
 fn centered_rect(percent_x: u16, percent_y: u16, area: Rect) -> Rect {

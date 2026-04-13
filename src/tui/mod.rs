@@ -104,10 +104,11 @@ pub async fn run(exercises_dir: PathBuf) -> Result<()> {
                 }
             }
             AppEvent::FileChanged(path) => {
-                let was_selected = app.selected;
+                let was_focused = app.current_exercise_index();
                 if let Ok(Some(changed_idx)) = app.reverify_by_path(&path) {
-                    // Auto-advance if the current exercise just passed
-                    if changed_idx == was_selected
+                    // Auto-advance only when the currently focused exercise
+                    // (cursor on Exercise, same index) just passed.
+                    if was_focused == Some(changed_idx)
                         && app.exercises[changed_idx].status == ExerciseStatus::Passed
                     {
                         app.flash_message = Some((

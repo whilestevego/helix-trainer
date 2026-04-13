@@ -25,6 +25,14 @@ pub enum Panel {
     Detail,
 }
 
+/// Where the tree cursor currently sits — either on a module header or a
+/// specific exercise.
+#[derive(Debug, Clone, PartialEq)]
+pub enum TreeCursor {
+    Module(String),
+    Exercise(usize),
+}
+
 pub struct CheatsheetCommand {
     pub key: String,
     pub description: String,
@@ -39,7 +47,7 @@ pub struct CheatsheetModule {
 
 pub struct App {
     pub exercises: Vec<ExerciseState>,
-    pub selected: usize,
+    pub cursor: TreeCursor,
     pub scroll_offset: usize,
     pub detail_scroll: usize,
     pub detail_scroll_max: usize,
@@ -112,7 +120,7 @@ impl App {
 
         Ok(App {
             exercises,
-            selected: initial_selected,
+            cursor: TreeCursor::Exercise(initial_selected),
             scroll_offset: 0,
             detail_scroll: 0,
             detail_scroll_max: 0,
@@ -130,17 +138,33 @@ impl App {
         })
     }
 
-    pub fn current_module(&self) -> &str {
-        &self.selected_exercise().meta.category
+    /// The module name the cursor is currently on (whether on the header or
+    /// on one of its exercises).
+    pub fn cursor_module(&self) -> &str {
+        match &self.cursor {
+            TreeCursor::Module(m) => m,
+            TreeCursor::Exercise(i) => &self.exercises[*i].meta.category,
+        }
+    }
+
+    pub fn current_exercise_index(&self) -> Option<usize> {
+        match &self.cursor {
+            TreeCursor::Exercise(i) => Some(*i),
+            TreeCursor::Module(_) => None,
+        }
+    }
+
+    pub fn current_exercise(&self) -> Option<&ExerciseState> {
+        self.current_exercise_index().map(|i| &self.exercises[i])
     }
 
     pub fn is_module_collapsed(&self, module: &str) -> bool {
         self.collapsed_modules.contains(module)
     }
 
-    /// Toggle the collapsed state of the currently selected exercise's module.
+    /// Toggle the collapsed state of the module the cursor is on.
     pub fn toggle_current_module(&mut self) {
-        let module = self.current_module().to_string();
+        let module = self.cursor_module().to_string();
         if self.collapsed_modules.contains(&module) {
             self.collapsed_modules.remove(&module);
         } else {
@@ -149,13 +173,30 @@ impl App {
     }
 
     pub fn collapse_current_module(&mut self) {
-        let module = self.current_module().to_string();
+        let module = self.cursor_module().to_string();
         self.collapsed_modules.insert(module);
     }
 
     pub fn expand_current_module(&mut self) {
-        let module = self.current_module().to_string();
+        let module = self.cursor_module().to_string();
         self.collapsed_modules.remove(&module);
+    }
+
+    /// The full ordered list of currently visible tree nodes (modules always
+    /// shown; exercises shown only when their module is expanded).
+    pub fn visible_tree(&self) -> Vec<TreeCursor> {
+        let mut nodes = Vec::new();
+        let mut current_module = String::new();
+        for (i, ex) in self.exercises.iter().enumerate() {
+            if ex.meta.category != current_module {
+                current_module = ex.meta.category.clone();
+                nodes.push(TreeCursor::Module(current_module.clone()));
+            }
+            if !self.is_module_collapsed(&ex.meta.category) {
+                nodes.push(TreeCursor::Exercise(i));
+            }
+        }
+        nodes
     }
 
     pub fn collapse_all_modules(&mut self) {
@@ -226,10 +267,6 @@ impl App {
         (passed, total)
     }
 
-    pub fn selected_exercise(&self) -> &ExerciseState {
-        &self.exercises[self.selected]
-    }
-
     pub fn focus_left(&mut self) {
         self.focused_panel = Panel::List;
     }
@@ -254,29 +291,36 @@ impl App {
         }
     }
 
+    /// Move cursor to the next visible tree node (module or exercise).
     pub fn select_next(&mut self) {
-        if self.selected < self.exercises.len() - 1 {
-            self.selected += 1;
-            self.hint_level = 0;
-            self.detail_scroll = 0;
-            self.expand_current_module();
+        let tree = self.visible_tree();
+        if let Some(pos) = tree.iter().position(|n| *n == self.cursor) {
+            if pos + 1 < tree.len() {
+                self.cursor = tree[pos + 1].clone();
+                self.hint_level = 0;
+                self.detail_scroll = 0;
+            }
         }
     }
 
+    /// Move cursor to the previous visible tree node (module or exercise).
     pub fn select_prev(&mut self) {
-        if self.selected > 0 {
-            self.selected -= 1;
-            self.hint_level = 0;
-            self.detail_scroll = 0;
-            self.expand_current_module();
+        let tree = self.visible_tree();
+        if let Some(pos) = tree.iter().position(|n| *n == self.cursor) {
+            if pos > 0 {
+                self.cursor = tree[pos - 1].clone();
+                self.hint_level = 0;
+                self.detail_scroll = 0;
+            }
         }
     }
 
     pub fn jump_next_incomplete(&mut self) {
+        let start = self.current_exercise_index().unwrap_or(0);
         for i in 0..self.exercises.len() {
-            let idx = (self.selected + 1 + i) % self.exercises.len();
+            let idx = (start + 1 + i) % self.exercises.len();
             if self.exercises[idx].status != ExerciseStatus::Passed {
-                self.selected = idx;
+                self.cursor = TreeCursor::Exercise(idx);
                 self.hint_level = 0;
                 self.detail_scroll = 0;
                 self.expand_current_module();
@@ -297,7 +341,10 @@ impl App {
     }
 
     pub fn reveal_hint(&mut self) {
-        let max_hints = self.selected_exercise().meta.hints.len();
+        let Some(ex) = self.current_exercise() else {
+            return;
+        };
+        let max_hints = ex.meta.hints.len();
         if self.hint_level < max_hints {
             self.hint_level += 1;
             // Scroll down to show the new hint
@@ -306,7 +353,10 @@ impl App {
     }
 
     pub fn reset_current(&mut self) -> anyhow::Result<()> {
-        let exercise = &self.exercises[self.selected];
+        let Some(idx) = self.current_exercise_index() else {
+            return Ok(());
+        };
+        let exercise = &self.exercises[idx];
         let template = crate::exercises::EXERCISES
             .get_file(&format!("{}.hxt", exercise.meta.id));
 
@@ -317,7 +367,7 @@ impl App {
                 std::time::Instant::now(),
             ));
             // Re-verify
-            self.reverify_exercise(self.selected)?;
+            self.reverify_exercise(idx)?;
         }
         Ok(())
     }
@@ -380,35 +430,47 @@ impl App {
         self.exercises.len()
     }
 
-    pub fn current_module_index(&self) -> (usize, usize) {
-        let current_category = &self.selected_exercise().meta.category;
-        let categories: Vec<&str> = self
-            .exercises
-            .iter()
-            .map(|e| e.meta.category.as_str())
-            .collect::<std::collections::BTreeSet<_>>()
-            .into_iter()
-            .collect();
-        let module_idx = categories
-            .iter()
-            .position(|c| c == &current_category.as_str())
-            .unwrap_or(0);
-        (module_idx + 1, categories.len())
+    /// Modules in display order (the order they first appear in `exercises`).
+    pub fn modules_in_order(&self) -> Vec<&str> {
+        let mut seen = std::collections::HashSet::new();
+        let mut out = Vec::new();
+        for ex in &self.exercises {
+            if seen.insert(ex.meta.category.as_str()) {
+                out.push(ex.meta.category.as_str());
+            }
+        }
+        out
     }
 
-    pub fn current_exercise_in_module(&self) -> (usize, usize) {
-        let current_category = &self.selected_exercise().meta.category;
+    pub fn current_module_index(&self) -> (usize, usize) {
+        let current = self.cursor_module();
+        let modules = self.modules_in_order();
+        let idx = modules.iter().position(|m| *m == current).unwrap_or(0);
+        (idx + 1, modules.len())
+    }
+
+    /// Returns Some((pos, total)) when cursor is on an exercise; None when on a module.
+    pub fn current_exercise_in_module(&self) -> Option<(usize, usize)> {
+        let idx = self.current_exercise_index()?;
+        let category = &self.exercises[idx].meta.category;
         let module_exercises: Vec<usize> = self
             .exercises
             .iter()
             .enumerate()
-            .filter(|(_, e)| e.meta.category == *current_category)
+            .filter(|(_, e)| &e.meta.category == category)
             .map(|(i, _)| i)
             .collect();
-        let pos = module_exercises
+        let pos = module_exercises.iter().position(|&i| i == idx).unwrap_or(0);
+        Some((pos + 1, module_exercises.len()))
+    }
+
+    /// Indices of exercises belonging to a given module, in order.
+    pub fn exercises_in_module(&self, module: &str) -> Vec<usize> {
+        self.exercises
             .iter()
-            .position(|&i| i == self.selected)
-            .unwrap_or(0);
-        (pos + 1, module_exercises.len())
+            .enumerate()
+            .filter(|(_, e)| e.meta.category == module)
+            .map(|(i, _)| i)
+            .collect()
     }
 }
