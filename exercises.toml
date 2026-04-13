@@ -642,7 +642,7 @@ MNEMONIC: w = word, p = paragraph
 removing a word without leaving double spaces.
 """
 instructions = """
-Part 1: In the first paragraph, change "terrible" to "excellent"
+Part 1: In the first paragraph, change "a terrible" to "an excellent"
         and "failures" to "successes" using m i w then c.
 
 Part 2: Delete the entire second paragraph using m a p then d.
@@ -651,7 +651,7 @@ Part 2: Delete the entire second paragraph using m a p then d.
 Part 3: The third paragraph should remain untouched.
 """
 hints = [
-  "Move to \"terrible\", press m i w to select just that word, then c to change it. Type \"excellent\" and press Esc.",
+  "Select \"a terrible\" (two words), then c to change it. Type \"an excellent\" and press Esc. The article needs updating too!",
   "Move to \"failures\", press m i w then c, type \"successes\".",
   "For the second paragraph, place cursor on any word in it, press m a p to select the whole paragraph including the blank lines around it, then d to delete.",
   "Using m a p (around) instead of m i p (inside) ensures the blank lines are also removed, avoiding extra gaps.",
@@ -946,7 +946,7 @@ instructions = """
 """
 hints = [
   "For the CSS block — place cursor inside the first (, press m i ( to select --primary, then press m r ( [ to switch parens to brackets. Repeat for each line, or use a multi-selection approach.",
-  "Multi-select approach: search for var( using / v a r (, press Enter, then select all matches with %, then m r ( [ to replace all at once.",
+  "Multi-select approach: select the CSS block, then s v a r ( Enter to split into selections on each var(, then m r ( [ to replace all at once.",
   "For the log levels, you need to remove quotes from just the FIRST argument. Place cursor in \"INFO\", m d \" to remove its quotes. Repeat for WARN and ERROR.",
   "For the JSON keys, select host with w, then m s \" to wrap it. Repeat for port and debug.",
   "Advanced: search for the pattern of bare keys using /^\\s+\\w+ and multi-select, then m s \" on all of them.",
@@ -954,7 +954,7 @@ hints = [
 
 [[exercises.commands]]
 key = "%"
-description = "Select all matching instances (after initial selection)"
+description = "Select entire file contents"
 
 [[exercises.commands]]
 key = "m s"
@@ -971,10 +971,6 @@ description = "Delete surround"
 [[exercises.commands]]
 key = "C"
 description = "Copy selection to next line (multi-cursor)"
-
-[[exercises.commands]]
-key = "A-("
-description = "Select inside matching delimiters (Alt + open paren)"
 
 [[exercises]]
 id = "06-multi-selection/01-regex-select"
@@ -1035,30 +1031,18 @@ They are complementary:
 instructions = """
 TASK A — Split a comma-separated list into separate lines.
 
-1. Select the comma-separated line (press x)
-2. Press  S  (capital S) to split
-3. Type   ,\\s*   and press Enter
-   -> Each item is now its own selection
-4. Open a new line after each: you need to collapse and
-   restructure. The simplest approach:
-   a. After splitting, press  ms  to merge selections
-      Actually, easier: let's use a different approach.
-
-Better workflow:
-1. Select the line with x
+1. Select the comma-separated line with x
 2. Press  s  (lowercase) and type   ,\\s*   and Enter
    -> This selects all the ", " separators
 3. Press  c  to change them
 4. Press  Enter  to replace each comma-space with a newline
 5. Press  Esc
 
-TASK B — For the second block, select all lines with Alt-s,
-then add a prefix to each.
+TASK B — Add a checklist prefix to each line.
 
 1. Select all lines in the block (use x repeatedly or v + j)
 2. Press  Alt-s  to split into one selection per line
-3. Press  ms  (match surround) — actually, press  I  (capital)
-   to insert at the start of each selection
+3. Press  I  (capital I) to insert at the start of each selection
 4. Type   - [ ]   (dash, space, bracket, space, bracket, space)
 5. Press  Esc
 """
@@ -1134,39 +1118,16 @@ The list below mixes fruits and vegetables. Your goal: delete
 all the vegetables, keeping only the fruits.
 
 Strategy:
-1. Select the entire list (use x on each line, or v + j)
-2. Press  Alt-s  to split into one selection per line
-   -> You now have 10 selections, one per line
-3. Press  Alt-K  to remove selections matching a pattern
-4. Type   carrot|broccoli|spinach|celery|kale   and Enter
-   -> The vegetable lines are deselected; only fruit lines
-     remain selected
-5. Now you need the opposite — select the vegetables to delete
-   them. Let's use a different approach:
-
-Better strategy:
-1. Select the entire list with x (repeated) or v + j
-2. Press  Alt-s  to split on newlines
-3. Press  K  (keep matching) and type:
-     apple|mango|banana|grape|orange
-   -> Now only the fruit lines are selected
-4. Press  Alt-;  to flip: now vegetables are selected
-   Wait — that selects the gaps. Instead:
-
-Simplest strategy:
-1. Select all list lines
-2. Press  Alt-s  (one selection per line)
-3. Press  Alt-K  and type   carrot|broccoli|spinach|celery|kale
-   -> Vegetables are removed from selections, fruits remain
-4. Press  d  to delete the UNselected lines?
-   No — d deletes the SELECTED text. We want the opposite.
-
-Correct approach — delete the vegetables:
 1. Select all list lines with x repeated or v + j
 2. Press  Alt-s  to get one selection per line
-3. Press  K  and type   carrot|broccoli|spinach|celery|kale
-   -> Now only vegetable lines are selected
+3. Press  K  (keep matching) and type:
+     carrot|broccoli|spinach|celery|kale
+   -> Now only the vegetable lines are selected
 4. Press  d  to delete them
+
+Key insight: K keeps selections that MATCH the pattern.
+So K with vegetable names selects the vegetables, then d deletes them.
+The fruit lines are left untouched.
 """
 hints = [
   "First get one selection per line: select the block, then Alt-s.",
@@ -1305,7 +1266,7 @@ Rename it to "accountName" everywhere.
 
 Strategy:
 1. Position your cursor on one instance of "userName"
-2. Select it: use  w  to select the word, or  viw  to select
+2. Select it: use  w  to select the word, or  miw  to select
    inner word. Make sure you have exactly "userName" selected.
 3. Press  *  — this sets "userName" as the search pattern
 4. Now use the multi-selection approach:
@@ -1325,7 +1286,7 @@ Alternative (one at a time):
 There are 6 instances to rename.
 """
 hints = [
-  "To select exactly \"userName\", place cursor on the u, then use  2w  or  e  to extend to the end of the word. Or use  viw  if the word boundaries work well.",
+  "To select exactly \"userName\", place cursor on the u, then use  2w  or  e  to extend to the end of the word. Or use  miw  if the word boundaries work well.",
   "* with word boundaries means searching for \"userName\" won't accidentally match \"userNameValidator\" or similar.",
   "The multi-selection approach (select all, s, c) is faster than one-by-one when there are many matches.",
   "Be careful with the string literal \"userName is required\" — you want to change that too, to \"accountName is required\".",
@@ -1416,7 +1377,7 @@ description = "Done"
 id = "08-goto-mode/01-file-navigation"
 title = "File Navigation"
 category = "Goto Mode"
-difficulty = 3
+difficulty = 2
 notes = "MNEMONIC: g = goto. Then: h=home, l=last, s=start, t=top, c=center, b=bottom"
 instructions = """
 This file simulates a config file. Make these changes:
@@ -1991,7 +1952,7 @@ To paste from register a: position cursor, then press " a p.
 hints = [
   "Select 'server' with w, then press \" a y to yank it into register a.",
   "Select 'client' with w, then press \" b y to yank it into register b.",
-  "Navigate to each ???, select it, then press \" a p or \" b p depending on which word belongs there.",
+  "Navigate to each ???, select it with miw, then press c to change, then \" a p or \" b p to paste the register contents. Or select ??? and use \" a R to replace directly.",
 ]
 
 [[exercises.commands]]
@@ -2106,7 +2067,7 @@ Then replay for the remaining lines.
 """
 hints = [
   "On the first line, press f @ to jump to the @, then b to select back to the email start.",
-  "Try: Q to record, then f space (to find space before email), w to select the email, ms< to surround with angle brackets, j to next line, q to stop.",
+  "Try: Q to record, then f space (to find space before email), W to select the full email (WORD includes dots and @), ms< to surround with angle brackets, j to next line, q to stop.",
   "Replay with @ for each remaining line.",
 ]
 
@@ -2281,14 +2242,14 @@ These are essential for reading code — center the line you're
 working on, or push it to the top/bottom for context.
 """
 hints = [
-  "z c centers the current line on screen ('c' for center).",
+  "z z centers the current line on screen. z c is an alias in Helix but not in Zed.",
   "z t moves the current line to the top ('t' for top).",
   "z b moves the current line to the bottom ('b' for bottom).",
   "z k and z j scroll the viewport up/down by one line without moving the cursor.",
 ]
 
 [[exercises.commands]]
-key = "z c"
+key = "z z"
 description = "Center current line on screen"
 
 [[exercises.commands]]
@@ -2601,12 +2562,12 @@ key = "miwy"
 description = "Yank inner word (Vim: yiw)"
 
 [[exercises.commands]]
-key = "vmip"
+key = "mip"
 description = "Select inner paragraph (Vim: vip)"
 
 [[exercises.commands]]
 key = "masd"
-description = "Delete around sentence (Vim: das)"
+description = "Delete around sentence (Vim: das) — Zed-specific, not in native Helix"
 
 [[exercises.commands]]
 key = "mr\"'"

@@ -22,7 +22,7 @@ function calculateTotal(items, taxRate, discount) {
 
 function formatUser(name, email) {
   const display = `${name} <${email}>`;
-  return { display, role };
+  return { display };
 }
 
 function calculateTotal(items, taxRate, discount) {

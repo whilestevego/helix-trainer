@@ -16,7 +16,7 @@ Fill in the correct keybinding for each view command.
 
 OPERATION                               KEYBINDING
 ─────────────────────────────────────────────────────
-Center current line on screen:          z c
+Center current line on screen:          z z
 Scroll current line to top:             z t
 Scroll current line to bottom:          z b
 Scroll up one line:                     z k
