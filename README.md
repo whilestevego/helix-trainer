@@ -68,29 +68,18 @@ Exercise `.hxt` files are minimal — just the content you need to edit:
 ────────────────────────── PRACTICE ──────────────────────────────
 
 The color of the sky changes throughout the day. At dawn, a warm
-color spreads across the horizon. By noon the color shifts to a
-brilliant blue. Artists know that color theory is essential for
-painting realistic scenes. The right color can set the entire
-mood of a composition.
+color spreads across the horizon.
 
 ────────────────────────── EXPECTED ──────────────────────────────
 
 The colour of the sky changes throughout the day. At dawn, a warm
-colour spreads across the horizon. By noon the colour shifts to a
-brilliant blue. Artists know that colour theory is essential for
-painting realistic scenes. The right colour can set the entire
-mood of a composition.
-
-──────────────────────────────────────────────────────────────────
-HINTS (read only if stuck):
-  ...
+colour spreads across the horizon.
 ```
 
-- **COMMANDS TO LEARN** — the keybindings the exercise teaches
-- **INSTRUCTIONS** — what to do and how
 - **PRACTICE** — the text you edit with real Helix commands
 - **EXPECTED** — what PRACTICE should look like when you're done
-- **HINTS** — placed below EXPECTED so you scroll past the answer first
+
+Everything else — title, commands to learn, instructions, and hints — lives in the TUI, not in the file. This keeps the editing surface clean and focused.
 
 ## Curriculum
 
@@ -141,16 +130,18 @@ HINTS (read only if stuck):
 
 ### `helix-trainer init [dir]`
 
-Generate a new exercise project.
+Generate a new exercise project — or update an existing one.
 
 ```sh
 helix-trainer init                    # Creates ./helix-exercises/
 helix-trainer init ~/my-training      # Custom location
 ```
 
+If the target directory already has exercises, `init` is **additive**: it only writes files that don't exist yet, leaving your edited exercises untouched. This is how you pick up new exercises after upgrading the tool.
+
 ### `helix-trainer`
 
-Launch the TUI from inside a project directory. The TUI watches exercise files for changes and auto-verifies on save.
+Launch the TUI from inside a project directory. The TUI watches exercise files for changes and auto-verifies on save. When new exercises are available (e.g. after an upgrade), a banner appears in the header — press `u` to install them in-place.
 
 **TUI Keybindings:**
 
@@ -161,6 +152,7 @@ Launch the TUI from inside a project directory. The TUI watches exercise files f
 | `Space` | 💡 Reveal next hint |
 | `r` | 🔄 Reset current exercise |
 | `n` | ⏭️ Jump to next incomplete |
+| `u` | 📦 Install new exercises (when banner is showing) |
 | `?` | Toggle help overlay |
 | `q` | Quit |
 
@@ -192,7 +184,7 @@ This is the workflow you'll master in Module 06.
 
 **Follow the progression.** The exercises build on each other. Module 04 (text objects) assumes you know Module 03 (changes). Module 06 (multi-selection) assumes you know Module 04.
 
-**One module per session.** Don't grind through all 49 in a day. Do a module, then use those commands in your real work. Come back tomorrow.
+**One module per session.** Don't grind through all 65 in a day. Do a module, then use those commands in your real work. Come back tomorrow.
 
 **Use the which-key popup.** Press any prefix key (`g`, `m`, `Space`, `z`, `]`, `[`) and pause — a popup shows all available sub-commands. This is your cheat sheet.
 
@@ -200,7 +192,7 @@ This is the workflow you'll master in Module 06.
 
 **Use the TUI hints.** Press `Space` to reveal hints one at a time. Try each exercise without hints first. Struggle is where learning happens.
 
-**Repeat the hard ones.** Press `r` in the TUI to reset any exercise. The challenges in Module 12 are designed for repeated practice.
+**Repeat the hard ones.** Press `r` in the TUI to reset any exercise. The challenges in Module 16 are designed for repeated practice.
 
 ## Compatibility
 
@@ -218,11 +210,17 @@ Contributions are welcome! Here's how you can help:
 
 ### Adding exercises
 
-1. Follow the `.hxt` format (see any existing exercise for reference)
-2. Place the file in the appropriate module directory
-3. Ensure PRACTICE and EXPECTED sections are bounded by the marker lines
-4. Test with `helix-trainer verify` to confirm the parser handles your file
-5. Include progressive hints
+An exercise is two things: a minimal `.hxt` file and a metadata entry in `exercises.toml`.
+
+1. **Create the `.hxt` file** in the appropriate module directory under `exercises/`
+   - Only the PRACTICE and EXPECTED sections, bounded by `──── PRACTICE ────` and `──── EXPECTED ────` markers
+   - See any existing exercise (e.g. `exercises/01-movement/01-basic-motion.hxt`) for the format
+2. **Add the metadata** to `exercises.toml`:
+   - `id` matching the file path without `.hxt`
+   - `title`, `category`, `difficulty` (1-3)
+   - `notes`, `instructions`, `hints` (what the TUI shows)
+   - `[[exercises.commands]]` entries for the keybindings taught
+3. **Build and launch** with `cargo run` to verify your exercise loads and parses
 
 ### Exercise quality checklist
 
@@ -244,7 +242,7 @@ A single-binary Rust TUI built with ratatui:
 - **`src/hxt.rs`** — Pure parser for `.hxt` files: extracts PRACTICE/EXPECTED sections, diffs them
 - **`src/metadata.rs`** — Exercise metadata (titles, instructions, hints) deserialized from embedded TOML
 - **`src/commands/init.rs`** — Extracts embedded exercises to a new directory
-- **`exercises.toml`** — All 49 exercises' metadata (embedded in binary at compile time)
+- **`exercises.toml`** — All 65 exercises' metadata (embedded in binary at compile time)
 
 Exercise templates and metadata are compiled into the binary via `include_dir!` and `include_str!`. The TUI watches `.hxt` files for changes using the `notify` crate.
 
