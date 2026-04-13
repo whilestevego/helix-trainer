@@ -208,4 +208,68 @@ hello
         let result = verify_content(content);
         assert!(!result.passed);
     }
+
+    #[test]
+    fn test_last_separator_wins_as_expected_end() {
+        // `extract_sections` updates `expected_end` on every separator seen
+        // after EXPECTED — the *last* separator wins. Content between the
+        // first and last trailing separators is therefore INCLUDED in
+        // `expected`. This mirrors the real `.hxt` files, which have exactly
+        // one trailing separator.
+        let content = "\
+────────────────────────── PRACTICE ──────────────────────────────
+
+hello
+
+────────────────────────── EXPECTED ──────────────────────────────
+
+hello
+
+──────────────────────────────────────────────────────────────────
+interstitial
+──────────────────────────────────────────────────────────────────";
+        let sections = extract_sections(content).expect("should parse");
+        assert!(
+            sections.expected.contains("interstitial"),
+            "last separator wins: text between separators is part of expected, got {:?}",
+            sections.expected
+        );
+    }
+
+    #[test]
+    fn test_leading_trailing_blank_lines_trimmed() {
+        let content = "\
+────────────────────────── PRACTICE ──────────────────────────────
+
+
+
+  body
+
+────────────────────────── EXPECTED ──────────────────────────────
+
+
+
+  body
+
+──────────────────────────────────────────────────────────────────";
+        let sections = extract_sections(content).expect("should parse");
+        assert_eq!(sections.practice, "  body");
+        assert_eq!(sections.expected, "  body");
+    }
+
+    #[test]
+    fn test_no_trailing_separator_after_expected() {
+        // Content that ends immediately after EXPECTED body (no closing
+        // separator) should still parse; expected extends to EOF.
+        let content = "\
+────────────────────────── PRACTICE ──────────────────────────────
+
+hello
+
+────────────────────────── EXPECTED ──────────────────────────────
+
+hello";
+        let sections = extract_sections(content).expect("should parse");
+        assert_eq!(sections.expected, "hello");
+    }
 }

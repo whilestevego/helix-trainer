@@ -1,12 +1,8 @@
-mod commands;
-mod exercises;
-mod hxt;
-mod metadata;
-mod tui;
-
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
+
+use helixir::{commands, find_exercises_dir, tui};
 
 #[derive(Parser)]
 #[command(
@@ -26,15 +22,6 @@ enum Commands {
         /// Target directory
         dir: Option<PathBuf>,
     },
-}
-
-fn find_exercises_dir() -> PathBuf {
-    let cwd = std::env::current_dir().expect("cannot determine current directory");
-    if cwd.ends_with("exercises") {
-        cwd
-    } else {
-        cwd.join("exercises")
-    }
 }
 
 #[tokio::main]

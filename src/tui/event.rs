@@ -73,6 +73,12 @@ impl EventHandler {
         EventHandler { rx }
     }
 
+    /// Test constructor: wraps a pre-built receiver. Callers push events
+    /// into the paired sender to drive the handler deterministically.
+    pub fn from_receiver(rx: mpsc::UnboundedReceiver<AppEvent>) -> Self {
+        EventHandler { rx }
+    }
+
     pub async fn next(&mut self) -> anyhow::Result<AppEvent> {
         self.rx
             .recv()

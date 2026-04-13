@@ -1,0 +1,44 @@
+---
+source: tests/tui_snapshots.rs
+expression: render_to_string(&mut a)
+---
+ 🧪  Helixir    📦  Module 1/2   📝  Exercise 2/2   [?] help
+
+┌ 📚  Exercises ────────────────────┐┌ Exercise Detail ─────────────────────────────────────────────────────────────────┐
+│ ▼ 🗂  Movement (1/2)              ││                                                                                  │
+│                                  ││  ⭐ ⭐  Move 2                                                                     │
+│    ✅  Move 1                     ││  Category: Movement   Difficulty: 2/3                                            │
+│       Move 2                     ││                                                                                  │
+│                                  ││  ⌨️   COMMANDS                                                                    │
+│ ▶ 🗂  Selection (1/2)             ││                                                                                  │
+│                                  ││     w       word                                                                 │
+│                                  ││                                                                                  │
+│                                  ││  📋  INSTRUCTIONS                                                                 │
+│                                  ││                                                                                  │
+│                                  ││     Instructions for Move 2                                                      │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││  ───────────────────────────────────────────                                     │
+│                                  ││                                                                                  │
+│                                  ││  🎉  PASSED! Auto-advancing...                                                    │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││  ── end ──                                                                       │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+│                                  ││                                                                                  │
+└──────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────┘
+
+  🏆  ██████████░░░░░░░░░░ 2/4 (50%)      💡 [space] hint  🔄 [r] reset  ⏭️  [n] next  🚪 [q] quit      👀  Watching...
