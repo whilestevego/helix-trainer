@@ -4,6 +4,8 @@
 
 Helixir is a TUI that walks you through 65 structured exercises, watches your exercise files for changes, shows instructions and hints, and auto-advances as you complete each one. You edit in your real editor (Helix, Zed, or any editor with Helix keybindings) — no simulations, no quizzes. Just deliberate practice, one dose at a time.
 
+![Helixir in action — collapsible module tree on the left, exercise detail with commands, instructions, and hints on the right](docs/screenshot.png)
+
 ```
 helixir init
 cd helixir-exercises
