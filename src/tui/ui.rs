@@ -488,6 +488,15 @@ fn build_exercise_detail_lines(app: &App) -> Vec<Line<'static>> {
                         .fg(Color::Green)
                         .add_modifier(Modifier::BOLD),
                 )));
+                if let Some(idx) = app.current_exercise_index()
+                    && let Some(p) = app.progress_for(idx)
+                {
+                    let first = p.first_completed_at.format("%Y-%m-%d");
+                    lines.push(Line::from(Span::styled(
+                        format!("  🏁 Completed {}× · first {}", p.completion_count, first),
+                        Style::default().fg(Color::DarkGray),
+                    )));
+                }
             }
             ExerciseStatus::NotStarted => {
                 lines.push(Line::from(Span::styled(

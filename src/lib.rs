@@ -2,6 +2,7 @@ pub mod commands;
 pub mod exercises;
 pub mod hxt;
 pub mod metadata;
+pub mod progress;
 pub mod tui;
 
 use std::path::PathBuf;
