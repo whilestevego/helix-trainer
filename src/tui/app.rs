@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 use crate::hxt;
 use crate::metadata::{self, ExerciseMeta};
+use crate::progress::{ExerciseProgress, Progress};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExerciseStatus {
@@ -66,6 +67,8 @@ pub struct App {
     pub cheatsheet_scroll: usize,
     /// Pending z-prefix chord (for zc/zo/za/zM/zR).
     pub pending_chord: Option<char>,
+    /// Persistent completion history, loaded from `<exercises_dir>/.progress.json`.
+    pub progress: Progress,
 }
 
 impl App {
@@ -115,6 +118,8 @@ impl App {
             collapsed_modules.remove(&m);
         }
 
+        let progress = Progress::load(&exercises_dir);
+
         Ok(App {
             exercises,
             cursor: TreeCursor::Exercise(initial_selected),
@@ -132,6 +137,7 @@ impl App {
             show_cheatsheet: false,
             cheatsheet_scroll: 0,
             pending_chord: None,
+            progress,
         })
     }
 
@@ -161,6 +167,8 @@ impl App {
             TreeCursor::Exercise(initial_selected)
         };
 
+        let progress = Progress::load(&exercises_dir);
+
         App {
             exercises,
             cursor,
@@ -178,7 +186,24 @@ impl App {
             show_cheatsheet: false,
             cheatsheet_scroll: 0,
             pending_chord: None,
+            progress,
         }
+    }
+
+    /// Record a not-passed → passed transition for the given exercise and
+    /// persist to disk. Save errors are logged but never propagated — we'd
+    /// rather drop a single update than crash mid-session.
+    pub fn record_pass(&mut self, index: usize) {
+        let id = self.exercises[index].meta.id.clone();
+        self.progress.record_pass(&id, chrono::Utc::now());
+        if let Err(e) = self.progress.save() {
+            eprintln!("warning: could not save progress: {}", e);
+        }
+    }
+
+    /// Look up persisted completion history for an exercise by index.
+    pub fn progress_for(&self, index: usize) -> Option<&ExerciseProgress> {
+        self.progress.get(&self.exercises[index].meta.id)
     }
 
     /// The module name the cursor is currently on (whether on the header or

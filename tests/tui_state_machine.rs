@@ -313,6 +313,89 @@ hello
 }
 
 #[test]
+fn file_changed_passing_records_completion_and_increments_on_redo() {
+    // Pass once, then "reset + redo" by toggling the file back to failing
+    // content and then back to passing. completion_count must be 2 with
+    // first_completed_at < last_completed_at.
+    let tmp = tempfile::tempdir().unwrap();
+    let dir = tmp.path().to_path_buf();
+    let mut app = test_app(dir.clone());
+
+    let idx = 1; // Movement/m2 — starts as Failed
+    app.cursor = TreeCursor::Exercise(idx);
+    let path = app.exercises[idx].file_path.clone();
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+
+    let passing = "\
+────────────────────────── PRACTICE ──────────────────────────────
+
+hello
+
+────────────────────────── EXPECTED ──────────────────────────────
+
+hello
+
+──────────────────────────────────────────────────────────────────
+";
+    let failing = "\
+────────────────────────── PRACTICE ──────────────────────────────
+
+wrong
+
+────────────────────────── EXPECTED ──────────────────────────────
+
+hello
+
+──────────────────────────────────────────────────────────────────
+";
+
+    // First pass
+    std::fs::write(&path, passing).unwrap();
+    handle_event(
+        &mut app,
+        AppEvent::FileChanged(path.clone()),
+        Instant::now(),
+    );
+    let id = app.exercises[idx].meta.id.clone();
+    let p = app.progress.get(&id).expect("progress recorded");
+    assert_eq!(p.completion_count, 1);
+    let first = p.first_completed_at;
+
+    // Save again while still passing — must NOT increment.
+    handle_event(
+        &mut app,
+        AppEvent::FileChanged(path.clone()),
+        Instant::now(),
+    );
+    assert_eq!(
+        app.progress.get(&id).unwrap().completion_count,
+        1,
+        "saving while already green must not bump count"
+    );
+
+    // Simulate reset: file becomes failing again.
+    std::fs::write(&path, failing).unwrap();
+    handle_event(
+        &mut app,
+        AppEvent::FileChanged(path.clone()),
+        Instant::now(),
+    );
+    assert_eq!(app.exercises[idx].status, ExerciseStatus::Failed);
+
+    // Sleep a hair so timestamps differ at second precision; chrono::Utc::now()
+    // has sub-second resolution so this is just a safety net.
+    std::thread::sleep(Duration::from_millis(5));
+
+    // Redo
+    std::fs::write(&path, passing).unwrap();
+    handle_event(&mut app, AppEvent::FileChanged(path), Instant::now());
+    let p = app.progress.get(&id).unwrap();
+    assert_eq!(p.completion_count, 2);
+    assert_eq!(p.first_completed_at, first, "first must not change");
+    assert!(p.last_completed_at >= first);
+}
+
+#[test]
 fn file_changed_for_unknown_path_is_noop() {
     let mut app = test_app(PathBuf::from("/tmp/x"));
     let before_status: Vec<_> = app.exercises.iter().map(|e| e.status.clone()).collect();

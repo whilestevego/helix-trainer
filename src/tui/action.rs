@@ -38,11 +38,23 @@ pub fn handle_event(app: &mut App, event: AppEvent, now: Instant) -> Action {
         AppEvent::Key(key) => handle_key(app, key),
         AppEvent::FileChanged(path) => {
             let was_focused = app.current_exercise_index();
-            if let Ok(Some(changed_idx)) = app.reverify_by_path(&path)
-                && was_focused == Some(changed_idx)
-                && app.exercises[changed_idx].status == ExerciseStatus::Passed
-            {
-                app.flash_message = Some(("🎉 PASSED! Auto-advancing...".to_string(), now));
+            // Find the affected exercise by path so we can capture its prior
+            // status before reverifying. Recording a "pass" only when the
+            // status actually transitions into Passed prevents us from
+            // bumping the completion count on every save while green.
+            let target_idx = app.exercises.iter().position(|e| e.file_path == path);
+            if let Some(idx) = target_idx {
+                let prior = app.exercises[idx].status.clone();
+                if app.reverify_exercise(idx).is_ok() {
+                    let now_passed = app.exercises[idx].status == ExerciseStatus::Passed;
+                    let just_passed = now_passed && prior != ExerciseStatus::Passed;
+                    if just_passed {
+                        app.record_pass(idx);
+                    }
+                    if was_focused == Some(idx) && now_passed {
+                        app.flash_message = Some(("🎉 PASSED! Auto-advancing...".to_string(), now));
+                    }
+                }
             }
             Action::None
         }
