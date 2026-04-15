@@ -79,6 +79,56 @@ fn snapshot_failing_exercise() {
 }
 
 #[test]
+fn snapshot_failing_exercise_many_diffs() {
+    // Regression guard for the no-truncation change: when an exercise has
+    // more than the old cap of 5 diffs, every one must still render.
+    // Also exercises the char-level highlighting with a shared-prefix case
+    // ("helloX" vs "helloY") and a whitespace-visualization case ("a b"
+    // vs "a  b" where the middle is a space).
+    use helixir::hxt::DiffLine;
+    let mut a = app();
+    a.cursor = TreeCursor::Exercise(1);
+    a.exercises[1].diff = vec![
+        DiffLine {
+            line_num: 1,
+            got: "helloA".into(),
+            expected: "helloB".into(),
+        },
+        DiffLine {
+            line_num: 2,
+            got: "foo bar".into(),
+            expected: "foo  bar".into(),
+        },
+        DiffLine {
+            line_num: 3,
+            got: "completely different".into(),
+            expected: "xyz".into(),
+        },
+        DiffLine {
+            line_num: 4,
+            got: "short".into(),
+            expected: "shorter".into(),
+        },
+        DiffLine {
+            line_num: 5,
+            got: "five".into(),
+            expected: "FIVE".into(),
+        },
+        DiffLine {
+            line_num: 6,
+            got: "six".into(),
+            expected: "SIX".into(),
+        },
+        DiffLine {
+            line_num: 7,
+            got: "seven".into(),
+            expected: "SEVEN".into(),
+        },
+    ];
+    insta::assert_snapshot!(render_to_string(&mut a));
+}
+
+#[test]
 fn snapshot_passed_exercise() {
     let mut a = app();
     // Expand Selection so Exercise(3) (Passed) is visible, then cursor there.
