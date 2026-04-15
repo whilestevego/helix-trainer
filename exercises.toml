@@ -1374,6 +1374,60 @@ key = "Esc"
 description = "Done"
 
 [[exercises]]
+id = "07-search/04-regex-patterns"
+title = "Regex Patterns"
+category = "Search"
+difficulty = 3
+notes = """
+Helix's search prompt accepts full regex. The classic character
+classes work: \\d (digit), \\w (word), \\s (whitespace), and
+quantifiers like + (one or more) and * (zero or more).
+
+Combined with %, s, and c, regex unlocks bulk transformations
+that would take dozens of manual edits.
+"""
+instructions = """
+Replace every numeric value in the log lines with the literal
+word "REDACTED". A single regex selection captures all numbers
+at once.
+
+Workflow:
+1. Press  %  to select the entire file
+2. Press  s  to open the selection prompt
+3. Type   \\d+   and press Enter
+   -> Every run of digits is now individually selected
+4. Press  c  to change all selections at once
+5. Type   REDACTED
+6. Press  Esc
+
+Note: \\d+ matches "one or more digits", so "500" becomes one
+selection (not three). This is exactly what you want — replace
+the whole number, not each digit.
+"""
+hints = [
+  "Make sure you select the practice block first (% selects the entire file). The s prompt only operates inside the current selection.",
+  "If you get prompted to enter a literal '\\d', remember Helix uses Rust regex syntax: \\d means digit, \\w means word character, \\s means whitespace.",
+  "Verify your selection count after pressing Enter — you should see one selection per number in the log lines (around 12 selections total). If you see far more or far fewer, your pattern is wrong.",
+  "Press u to undo if anything goes sideways. The whole flow is %, s, \\d+, Enter, c, REDACTED, Esc.",
+]
+
+[[exercises.commands]]
+key = "%"
+description = "Select the entire file"
+
+[[exercises.commands]]
+key = "s <regex>"
+description = "Select all regex matches within selection"
+
+[[exercises.commands]]
+key = "\\d+"
+description = "Regex: one or more digits"
+
+[[exercises.commands]]
+key = "c"
+description = "Change all selections"
+
+[[exercises]]
 id = "08-goto-mode/01-file-navigation"
 title = "File Navigation"
 category = "Goto Mode"
@@ -2002,6 +2056,52 @@ description = "Yank to system clipboard"
 key = "\"+p"
 description = "Paste from system clipboard"
 
+[[exercises]]
+id = "11-registers/04-append-to-register"
+title = "Append to Register"
+category = "Registers"
+difficulty = 3
+notes = """
+A lowercase register name OVERWRITES — every yank to "ay
+replaces what was there. An UPPERCASE register name APPENDS,
+so successive yanks to "Ay accumulate.
+
+This is how you collect scattered pieces of text from a buffer
+into a single register without losing earlier yanks.
+"""
+instructions = """
+Collect every TODO comment line from the function into register
+A, then paste the collected list at the PASTE HERE marker.
+
+Workflow:
+1. Move to the first TODO line; press  x  to select the whole line
+2. Press  " A y  to APPEND the line to register a
+   (capital A is the magic — lowercase a would overwrite)
+3. Move to the next TODO line; press  x  again
+4. Press  " A y  again — second line is appended
+5. Repeat for the third TODO
+6. Move to the line after "PASTE HERE:"
+7. Press  " a p  to paste the accumulated register a
+"""
+hints = [
+  "x selects the current line including its newline. That's what you want — appending the newline keeps each TODO on its own line in the register.",
+  "Capital A is *append* to register a. Capital B appends to register b. The capital letter doesn't create a new register — it just changes the yank semantics.",
+  "Paste with lowercase: \" a p (read the contents of register a). The capital is only for *writing*.",
+  "If you accidentally use lowercase a for one of the yanks, the register gets overwritten and you lose the earlier TODOs. Press u and start that yank over.",
+]
+
+[[exercises.commands]]
+key = "\"Ay"
+description = "Yank and APPEND to register a"
+
+[[exercises.commands]]
+key = "\"ap"
+description = "Paste contents of register a"
+
+[[exercises.commands]]
+key = "x"
+description = "Select current line"
+
 # ── Module 12: Macros ─────────────────────────────────────────────
 
 [[exercises]]
@@ -2115,6 +2215,61 @@ hints = [
 [[exercises.commands]]
 key = "Q"
 description = "Start recording"
+
+[[exercises.commands]]
+key = "q"
+description = "Stop recording"
+
+[[exercises.commands]]
+key = "@"
+description = "Replay macro"
+
+[[exercises]]
+id = "12-macros/04-macro-with-search"
+title = "Macro with Search"
+category = "Macros"
+difficulty = 3
+notes = """
+Macros that include a / search are powerful: each replay jumps
+to the next match before performing the transformation, so a
+single macro can sweep through an entire file without manual
+positioning between replays.
+
+Surrounding pairs (ms<char>) is from the surround module — it
+wraps the current selection with the given character pair.
+"""
+instructions = """
+Wrap every URL in angle brackets so they become Markdown
+autolinks: http://example.com  →  <http://example.com>
+
+Workflow:
+1. Press  Q  to start recording into the default macro register
+2. Press  /  to open the search prompt
+3. Type   http\\S+   and press Enter
+   (\\S+ matches one-or-more non-whitespace characters — the URL)
+4. Press  m s <  to surround the selected URL with < and >
+5. Press  q  to stop recording
+6. Press  @  three times — each replay finds the next URL and
+   wraps it
+"""
+hints = [
+  "The search inside the macro is the trick. Each replay re-runs the search, so the cursor naturally advances from one URL to the next without you tracking position.",
+  "ms< wraps the current selection with matching pair < and >. The current selection after the search IS the URL, so surround acts directly on it.",
+  "If you forget the leading h or end up surrounding the wrong thing, press u to undo, then re-record. Macros are throwaway — record, replay, discard.",
+  "Counted replay: 3@ runs the macro 3 times in a row instead of pressing @ three times. Useful when you know the count up front.",
+]
+
+[[exercises.commands]]
+key = "Q"
+description = "Start recording"
+
+[[exercises.commands]]
+key = "/"
+description = "Search forward"
+
+[[exercises.commands]]
+key = "ms<"
+description = "Surround current selection with < >"
 
 [[exercises.commands]]
 key = "q"
