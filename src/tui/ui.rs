@@ -6,6 +6,7 @@ use ratatui::widgets::{
     Block, Borders, List, ListItem, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState,
 };
 
+use crate::hxt::DiffLine;
 use crate::tui::app::{App, ExerciseStatus, Panel, TreeCursor};
 
 pub fn render(frame: &mut Frame, app: &mut App) {
@@ -515,22 +516,7 @@ fn build_exercise_detail_lines(app: &App) -> Vec<Line<'static>> {
                     Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
                 )));
                 lines.push(Line::raw(""));
-                for d in exercise.diff.iter().take(5) {
-                    lines.push(Line::from(Span::styled(
-                        format!("     line {}: got \"{}\"", d.line_num, d.got),
-                        Style::default().fg(Color::Red),
-                    )));
-                    lines.push(Line::from(Span::styled(
-                        format!("            expected \"{}\"", d.expected),
-                        Style::default().fg(Color::Green),
-                    )));
-                }
-                if diff_count > 5 {
-                    lines.push(Line::from(Span::styled(
-                        format!("     ... and {} more", diff_count - 5),
-                        Style::default().fg(Color::DarkGray),
-                    )));
-                }
+                lines.extend(build_diff_lines(&exercise.diff));
             }
         }
     }
@@ -964,4 +950,185 @@ fn centered_rect(percent_x: u16, percent_y: u16, area: Rect) -> Rect {
             Constraint::Percentage((100 - percent_x) / 2),
         ])
         .split(popup_layout[1])[1]
+}
+
+/// Split `line` into `(common_prefix, differing_middle, common_suffix)` using
+/// char-level longest-common-prefix / longest-common-suffix against `other`.
+/// The middle is the region that actually differs and deserves highlighting.
+///
+/// If `line == other`, middle is empty. If one side is a prefix of the other,
+/// the longer side's middle contains the extra chars. Unicode-safe (chars,
+/// not bytes).
+fn split_diff_region(line: &str, other: &str) -> (String, String, String) {
+    let line_chars: Vec<char> = line.chars().collect();
+    let other_chars: Vec<char> = other.chars().collect();
+
+    let prefix_len = line_chars
+        .iter()
+        .zip(other_chars.iter())
+        .take_while(|(a, b)| a == b)
+        .count();
+
+    // Suffix comparison must not cross into either string's prefix region.
+    let max_suffix = line_chars
+        .len()
+        .saturating_sub(prefix_len)
+        .min(other_chars.len().saturating_sub(prefix_len));
+    let suffix_len = line_chars
+        .iter()
+        .rev()
+        .zip(other_chars.iter().rev())
+        .take(max_suffix)
+        .take_while(|(a, b)| a == b)
+        .count();
+
+    let middle_end = line_chars.len() - suffix_len;
+    let prefix: String = line_chars[..prefix_len].iter().collect();
+    let middle: String = line_chars[prefix_len..middle_end].iter().collect();
+    let suffix: String = line_chars[middle_end..].iter().collect();
+    (prefix, middle, suffix)
+}
+
+/// Render whitespace visibly: space → `·`, tab → `→`. Applied only inside the
+/// differing middle so normal text stays readable.
+fn visualize_whitespace(s: &str) -> String {
+    s.chars()
+        .map(|c| match c {
+            ' ' => '·',
+            '\t' => '→',
+            other => other,
+        })
+        .collect()
+}
+
+/// Build styled spans for a single side of a diff line. Prefix/suffix render
+/// in neutral gray; the differing middle renders bold in `accent` with
+/// whitespace visualized.
+fn diff_line_spans(line: &str, other: &str, accent: Color) -> Vec<Span<'static>> {
+    let (prefix, middle, suffix) = split_diff_region(line, other);
+    let mut spans: Vec<Span<'static>> = Vec::new();
+    if !prefix.is_empty() {
+        spans.push(Span::styled(prefix, Style::default().fg(Color::Gray)));
+    }
+    if !middle.is_empty() {
+        spans.push(Span::styled(
+            visualize_whitespace(&middle),
+            Style::default().fg(accent).add_modifier(Modifier::BOLD),
+        ));
+    }
+    if !suffix.is_empty() {
+        spans.push(Span::styled(suffix, Style::default().fg(Color::Gray)));
+    }
+    spans
+}
+
+/// Build a full unified-diff-style block for all `DiffLine`s — no truncation,
+/// relies on detail-pane scroll for long lists.
+fn build_diff_lines(diff: &[DiffLine]) -> Vec<Line<'static>> {
+    let mut lines: Vec<Line<'static>> = Vec::new();
+    for (i, d) in diff.iter().enumerate() {
+        if i > 0 {
+            lines.push(Line::raw(""));
+        }
+        lines.push(Line::from(Span::styled(
+            format!("     line {}", d.line_num),
+            Style::default().fg(Color::DarkGray),
+        )));
+
+        let mut got_spans = vec![Span::styled(
+            "     - ",
+            Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+        )];
+        got_spans.extend(diff_line_spans(&d.got, &d.expected, Color::Red));
+        lines.push(Line::from(got_spans));
+
+        let mut exp_spans = vec![Span::styled(
+            "     + ",
+            Style::default()
+                .fg(Color::Green)
+                .add_modifier(Modifier::BOLD),
+        )];
+        exp_spans.extend(diff_line_spans(&d.expected, &d.got, Color::Green));
+        lines.push(Line::from(exp_spans));
+    }
+    lines
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn split_identical_lines_yields_empty_middle() {
+        let (p, m, s) = split_diff_region("hello", "hello");
+        assert_eq!(p, "hello");
+        assert_eq!(m, "");
+        assert_eq!(s, "");
+    }
+
+    #[test]
+    fn split_shared_prefix_and_suffix() {
+        // "hello WORLD foo" vs "hello EARTH foo" → differ only in the middle word.
+        let (p, m, s) = split_diff_region("hello WORLD foo", "hello EARTH foo");
+        assert_eq!(p, "hello ");
+        assert_eq!(m, "WORLD");
+        assert_eq!(s, " foo");
+    }
+
+    #[test]
+    fn split_one_is_prefix_of_other() {
+        let (p, m, s) = split_diff_region("hello world", "hello");
+        assert_eq!(p, "hello");
+        assert_eq!(m, " world");
+        assert_eq!(s, "");
+    }
+
+    #[test]
+    fn split_completely_different() {
+        let (p, m, s) = split_diff_region("abc", "xyz");
+        assert_eq!(p, "");
+        assert_eq!(m, "abc");
+        assert_eq!(s, "");
+    }
+
+    #[test]
+    fn split_empty_line() {
+        let (p, m, s) = split_diff_region("", "hello");
+        assert_eq!(p, "");
+        assert_eq!(m, "");
+        assert_eq!(s, "");
+    }
+
+    #[test]
+    fn split_unicode_safe() {
+        // Each emoji is multi-byte; algorithm must count by chars, not bytes.
+        let (p, m, s) = split_diff_region("✅ok✅", "✅no✅");
+        assert_eq!(p, "✅");
+        assert_eq!(m, "ok");
+        assert_eq!(s, "✅");
+    }
+
+    #[test]
+    fn visualize_whitespace_replaces_spaces_and_tabs() {
+        assert_eq!(visualize_whitespace("a b\tc"), "a·b→c");
+    }
+
+    #[test]
+    fn build_diff_lines_produces_three_rows_per_diff_plus_separators() {
+        let diff = vec![
+            DiffLine {
+                line_num: 1,
+                got: "foo".into(),
+                expected: "bar".into(),
+            },
+            DiffLine {
+                line_num: 3,
+                got: "x".into(),
+                expected: "y".into(),
+            },
+        ];
+        let out = build_diff_lines(&diff);
+        // Per diff: label + got + expected (3 rows). Plus 1 blank separator between the two diffs.
+        assert_eq!(out.len(), 3 + 1 + 3);
+    }
 }

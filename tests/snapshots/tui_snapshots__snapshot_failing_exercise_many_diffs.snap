@@ -1,0 +1,45 @@
+---
+source: tests/tui_snapshots.rs
+assertion_line: 128
+expression: render_to_string(&mut a)
+---
+ 🧪  Helixir    📦  Module 1/2   📝  Exercise 2/2   [?] help
+
+┌ 📚  Exercises ────────────────────┐┌ Exercise Detail ─────────────────────────────────────────────────────────────────┐
+│ ▼ 🗂  Movement (1/2)              ││                                                                                  █
+│                                  ││  ⭐ ⭐  Move 2                                                                     █
+│    ✅  Move 1                     ││  Category: Movement   Difficulty: 2/3                                            █
+│       Move 2                     ││                                                                                  █
+│                                  ││  ⌨️   COMMANDS                                                                    █
+│ ▶ 🗂  Selection (1/2)             ││                                                                                  █
+│                                  ││     w       word                                                                 █
+│                                  ││                                                                                  █
+│                                  ││  📋  INSTRUCTIONS                                                                 █
+│                                  ││                                                                                  █
+│                                  ││     Instructions for Move 2                                                      █
+│                                  ││                                                                                  █
+│                                  ││                                                                                  █
+│                                  ││  ───────────────────────────────────────────                                     █
+│                                  ││                                                                                  │
+│                                  ││  ❌  7 differences found                                                          │
+│                                  ││                                                                                  │
+│                                  ││     line 1                                                                       │
+│                                  ││     - helloA                                                                     │
+│                                  ││     + helloB                                                                     │
+│                                  ││                                                                                  │
+│                                  ││     line 2                                                                       │
+│                                  ││     - foo bar                                                                    │
+│                                  ││     + foo ·bar                                                                   │
+│                                  ││                                                                                  │
+│                                  ││     line 3                                                                       │
+│                                  ││     - completely·different                                                       │
+│                                  ││     + xyz                                                                        │
+│                                  ││                                                                                  │
+│                                  ││     line 4                                                                       │
+│                                  ││     - short                                                                      │
+│                                  ││     + shorter                                                                    │
+│                                  ││                                                                                  │
+│                                  ││     line 5                                                                       │
+└──────────────────────────────────┘└ ↕ j/k to scroll ─────────────────────────────────────────────────────────────────┘
+
+  🏆  ██████████░░░░░░░░░░ 2/4 (50%)      💡 [space] hint  🔄 [r] reset  ⏭️  [n] next  🚪 [q] quit      👀  Watching...
