@@ -41,7 +41,7 @@ mod tests {
     #[test]
     fn test_load_all_exercises() {
         let db = load_exercises();
-        assert_eq!(db.exercises.len(), 65);
+        assert_eq!(db.exercises.len(), 68);
     }
 
     #[test]
