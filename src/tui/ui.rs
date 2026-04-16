@@ -127,29 +127,44 @@ fn build_exercise_list(app: &App, width: u16) -> ListLayout {
             } else {
                 format!("({}/{})", passed, total)
             };
-            let header_text = format!(" {} 🗂  {} {}", chevron, current_category, badge);
             let cursor_on_header = matches!(
                 &app.cursor,
                 TreeCursor::Module(m) if m == &current_category
             );
             let header_line = if cursor_on_header {
-                let padded = if header_text.chars().count() < content_width {
-                    format!("{:width$}", header_text, width = content_width)
-                } else {
-                    header_text.chars().take(content_width).collect()
-                };
+                let prefix = format!(" {} 🗂  ", chevron);
+                let suffix = format!(" {}", badge);
+                let raw_len = prefix.chars().count()
+                    + current_category.chars().count()
+                    + suffix.chars().count();
+                let pad = content_width.saturating_sub(raw_len);
                 cursor_row = Some(items.len());
-                Line::from(Span::styled(padded, selected_style))
+                let mut spans = vec![Span::styled(prefix, selected_style)];
+                spans.extend(title_spans(
+                    &current_category,
+                    &app.filter.query,
+                    selected_style,
+                ));
+                spans.push(Span::styled(suffix, selected_style));
+                if pad > 0 {
+                    spans.push(Span::styled(" ".repeat(pad), selected_style));
+                }
+                Line::from(spans)
             } else {
-                Line::from(vec![
-                    Span::styled(
-                        format!(" {} 🗂  {} ", chevron, current_category),
-                        Style::default()
-                            .fg(Color::Yellow)
-                            .add_modifier(Modifier::BOLD),
-                    ),
-                    Span::styled(badge, Style::default().fg(Color::DarkGray)),
-                ])
+                let header_style = Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD);
+                let mut spans = vec![Span::styled(format!(" {} 🗂  ", chevron), header_style)];
+                spans.extend(title_spans(
+                    &current_category,
+                    &app.filter.query,
+                    header_style,
+                ));
+                spans.push(Span::styled(
+                    format!(" {}", badge),
+                    Style::default().fg(Color::DarkGray),
+                ));
+                Line::from(spans)
             };
             items.push(ListItem::new(header_line));
             if !collapsed {
