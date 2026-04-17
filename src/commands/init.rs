@@ -4,6 +4,7 @@ use std::path::Path;
 use anyhow::{Context, Result};
 
 use crate::exercises::EXERCISES;
+use crate::metadata;
 
 /// Extract embedded exercises to disk. If `skip_existing` is true,
 /// only writes files that don't already exist (additive update).
@@ -59,9 +60,26 @@ fn count_missing_in_dir(dir: &include_dir::Dir<'_>, dest: &Path) -> usize {
     missing
 }
 
+/// Rename legacy `.hxt` files whose extension has changed (e.g. to `.js`)
+/// so that the user's edits are preserved under the new filename.
+pub fn migrate_renamed_exercises(exercises_dir: &Path) {
+    let db = metadata::load_exercises();
+    for meta in &db.exercises {
+        if meta.extension == "hxt" {
+            continue;
+        }
+        let legacy = exercises_dir.join(format!("{}.hxt", meta.id));
+        let new_path = exercises_dir.join(meta.filename());
+        if legacy.exists() && !new_path.exists() {
+            let _ = fs::rename(&legacy, &new_path);
+        }
+    }
+}
+
 /// Install only the missing exercises into an existing exercises directory.
 /// Returns the number of new files written.
 pub fn install_missing(exercises_dir: &Path) -> Result<usize> {
+    migrate_renamed_exercises(exercises_dir);
     let (new_count, _) = extract_dir(&EXERCISES, exercises_dir, true)?;
     Ok(new_count)
 }
@@ -80,6 +98,7 @@ pub fn run(target_arg: Option<&Path>) -> Result<()> {
 
     // If exercises already exist, do an additive update
     if exercises_dest.join("README.md").exists() {
+        migrate_renamed_exercises(&exercises_dest);
         let missing = count_missing_exercises(&exercises_dest);
         if missing == 0 {
             println!("\n  ✅ All exercises are already up to date.\n");

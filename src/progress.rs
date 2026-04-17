@@ -1,7 +1,7 @@
 //! Persistent per-exercise completion progress.
 //!
 //! Stored as `<exercises_dir>/.progress.json`. Keyed by exercise id (the path
-//! under `exercises/` without `.hxt`). Tracks first/last completion timestamps
+//! under `exercises/` without the file extension). Tracks first/last completion timestamps
 //! and a count incremented on each not-passed → passed transition.
 //!
 //! All I/O is fail-soft: a missing or corrupt file yields an empty store

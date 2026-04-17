@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -15,7 +16,7 @@ pub struct EventHandler {
 }
 
 impl EventHandler {
-    pub fn new(exercises_dir: PathBuf) -> Self {
+    pub fn new(exercises_dir: PathBuf, watch_extensions: HashSet<&'static str>) -> Self {
         let (tx, rx) = mpsc::unbounded_channel();
 
         // Crossterm key events + tick
@@ -62,9 +63,11 @@ impl EventHandler {
 
             // Keep debouncer alive and forward events
             while let Some(path) = notify_rx.recv().await {
-                if path.extension().is_some_and(|e| e == "hxt")
-                    && tx_files.send(AppEvent::FileChanged(path)).is_err()
-                {
+                let dominated = path
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .is_some_and(|e| watch_extensions.contains(e));
+                if dominated && tx_files.send(AppEvent::FileChanged(path)).is_err() {
                     break;
                 }
             }

@@ -1,4 +1,4 @@
-────────────────────────── PRACTICE ──────────────────────────────
+// ────────────────────────── PRACTICE ──────────────────────────────
 
 const env = "PLACEHOLDER";
 const apiUrl = "http://staging.internal/api";
@@ -14,7 +14,7 @@ function onConnect(socket) {
   processData(TODO);
 }
 
-────────────────────────── EXPECTED ──────────────────────────────
+// ────────────────────────── EXPECTED ──────────────────────────────
 
 const env = "production";
 const apiUrl = "https://api.example.com/v2";
@@ -27,4 +27,3 @@ function onConnect(socket) {
   fetchData(userId, sessionToken, { cache: true });
   processData(userId, sessionToken, { cache: true });
 }
-

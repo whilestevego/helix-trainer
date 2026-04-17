@@ -121,13 +121,14 @@ pub struct App {
 
 impl App {
     pub fn new(exercises_dir: PathBuf) -> anyhow::Result<Self> {
+        crate::commands::init::migrate_renamed_exercises(&exercises_dir);
         let missing_exercises = crate::commands::init::count_missing_exercises(&exercises_dir);
 
         let db = metadata::load_exercises();
         let mut exercises = Vec::with_capacity(db.exercises.len());
 
         for meta in &db.exercises {
-            let file_path = exercises_dir.join(format!("{}.hxt", meta.id));
+            let file_path = exercises_dir.join(meta.filename());
             let (status, diff) = if file_path.exists() {
                 let content = fs::read_to_string(&file_path)?;
                 let result = hxt::verify_content(&content);
@@ -764,7 +765,7 @@ impl App {
             return Ok(());
         };
         let exercise = &self.exercises[idx];
-        let template = crate::exercises::EXERCISES.get_file(format!("{}.hxt", exercise.meta.id));
+        let template = crate::exercises::EXERCISES.get_file(exercise.meta.filename());
 
         if let Some(template_file) = template {
             fs::write(&exercise.file_path, template_file.contents())?;

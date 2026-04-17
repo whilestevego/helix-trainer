@@ -29,6 +29,7 @@ fn make_meta(
                 description: d.to_string(),
             })
             .collect(),
+        extension: "hxt".to_string(),
     };
     // Leak into 'static — acceptable in test binaries.
     Box::leak(Box::new(meta))
@@ -40,7 +41,7 @@ fn make_state(
     diff: Vec<DiffLine>,
     dir: &Path,
 ) -> ExerciseState {
-    let file_path = dir.join(format!("{}.hxt", meta.id));
+    let file_path = dir.join(meta.filename());
     ExerciseState {
         meta,
         status,

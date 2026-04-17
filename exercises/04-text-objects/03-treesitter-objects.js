@@ -1,4 +1,4 @@
-────────────────────────── PRACTICE ──────────────────────────────
+// ────────────────────────── PRACTICE ──────────────────────────────
 
 function formatUser(name, email, role) {
   const display = `${name} <${email}>`;
@@ -18,7 +18,7 @@ function calculateTotal(items, taxRate, discount) {
   return Math.round(total * 100) / 100;
 }
 
-────────────────────────── EXPECTED ──────────────────────────────
+// ────────────────────────── EXPECTED ──────────────────────────────
 
 function formatUser(name, email) {
   const display = `${name} <${email}>`;
@@ -27,4 +27,3 @@ function formatUser(name, email) {
 
 function calculateTotal(items, taxRate, discount) {
 }
-

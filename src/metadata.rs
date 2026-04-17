@@ -18,6 +18,19 @@ pub struct ExerciseMeta {
     pub hints: Vec<String>,
     #[serde(default)]
     pub commands: Vec<Command>,
+    #[serde(default = "default_extension")]
+    pub extension: String,
+}
+
+fn default_extension() -> String {
+    "hxt".to_string()
+}
+
+impl ExerciseMeta {
+    /// Returns the relative file path for this exercise (e.g. `"04-text-objects/03-treesitter-objects.js"`).
+    pub fn filename(&self) -> String {
+        format!("{}.{}", self.id, self.extension)
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -32,6 +45,15 @@ pub fn load_exercises() -> &'static ExerciseDb {
     use std::sync::OnceLock;
     static DB: OnceLock<ExerciseDb> = OnceLock::new();
     DB.get_or_init(|| toml::from_str(EXERCISES_TOML).expect("exercises.toml is invalid"))
+}
+
+/// Returns the set of all file extensions used by exercises (e.g. `{"hxt", "js"}`).
+pub fn exercise_extensions() -> std::collections::HashSet<&'static str> {
+    load_exercises()
+        .exercises
+        .iter()
+        .map(|e| e.extension.as_str())
+        .collect()
 }
 
 #[cfg(test)]
@@ -81,13 +103,13 @@ mod tests {
     }
 
     #[test]
-    fn test_every_exercise_id_has_matching_hxt_file() {
+    fn test_every_exercise_id_has_matching_file() {
         let db = load_exercises();
         for ex in &db.exercises {
-            let path = format!("{}.hxt", ex.id);
+            let path = ex.filename();
             assert!(
                 crate::exercises::EXERCISES.get_file(&path).is_some(),
-                "exercise id '{}' has no embedded .hxt file at '{}'",
+                "exercise id '{}' has no embedded file at '{}'",
                 ex.id,
                 path
             );

@@ -28,7 +28,7 @@ pub async fn run(exercises_dir: PathBuf) -> Result<()> {
     let mut terminal = Terminal::new(backend)?;
 
     let mut app = App::new(exercises_dir.clone())?;
-    let mut events = EventHandler::new(exercises_dir);
+    let mut events = EventHandler::new(exercises_dir, crate::metadata::exercise_extensions());
 
     // Main loop
     loop {

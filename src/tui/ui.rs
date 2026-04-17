@@ -561,7 +561,7 @@ fn build_exercise_detail_lines(app: &App) -> Vec<Line<'static>> {
             }
             ExerciseStatus::NotStarted => {
                 lines.push(Line::from(Span::styled(
-                    "  ⬜ Not started — edit the .hxt file to begin",
+                    "  ⬜ Not started — edit the exercise file to begin",
                     Style::default().fg(Color::DarkGray),
                 )));
             }
@@ -957,7 +957,7 @@ fn render_help_popup(frame: &mut Frame, _app: &App) {
         Line::raw(""),
         Line::raw(""),
         Line::from(Span::styled(
-            "    Edit .hxt files in your editor — changes",
+            "    Edit exercise files in your editor — changes",
             Style::default().fg(Color::DarkGray),
         )),
         Line::from(Span::styled(

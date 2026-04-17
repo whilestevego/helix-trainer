@@ -19,19 +19,31 @@ pub struct VerifyResult {
     pub diff: Vec<DiffLine>,
 }
 
-fn is_separator(line: &str) -> bool {
+/// Strip a leading single-line comment prefix (`//`, `#`, `--`, `%`, `;`)
+/// so that separator/marker detection works inside commented lines.
+fn strip_comment_prefix(line: &str) -> &str {
     let trimmed = line.trim();
-    !trimmed.is_empty() && trimmed.chars().all(|c| c == '─')
+    for prefix in &["//", "#", "--", "%", ";"] {
+        if let Some(rest) = trimmed.strip_prefix(prefix) {
+            return rest.trim();
+        }
+    }
+    trimmed
+}
+
+fn is_separator(line: &str) -> bool {
+    let stripped = strip_comment_prefix(line);
+    !stripped.is_empty() && stripped.chars().all(|c| c == '─')
 }
 
 fn is_practice_marker(line: &str) -> bool {
-    let trimmed = line.trim();
-    trimmed.contains("PRACTICE") && trimmed.starts_with('─') && trimmed.ends_with('─')
+    let stripped = strip_comment_prefix(line);
+    stripped.contains("PRACTICE") && stripped.starts_with('─') && stripped.ends_with('─')
 }
 
 fn is_expected_marker(line: &str) -> bool {
-    let trimmed = line.trim();
-    trimmed.contains("EXPECTED") && trimmed.starts_with('─') && trimmed.ends_with('─')
+    let stripped = strip_comment_prefix(line);
+    stripped.contains("EXPECTED") && stripped.starts_with('─') && stripped.ends_with('─')
 }
 
 fn trim_blank_lines<'a>(lines: &'a [&'a str]) -> Vec<&'a str> {
